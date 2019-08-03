@@ -1,0 +1,3 @@
+#+TITLE: Read Me
+
+This is a repository to store [[https://guix.gnu.org/manual/en/html_node/Channels.html][Guix channels]] I use. Each channel is on a different branch. ~master~ only contains this file.
