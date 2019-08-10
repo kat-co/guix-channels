@@ -1,3 +1,17 @@
 #+TITLE: Read Me
 
-This is a repository to store [[https://guix.gnu.org/manual/en/html_node/Channels.html][Guix channels]] I use. Each channel is on a different branch. ~master~ only contains this file.
+This channel is for software which I intend to propose for merging into Guix proper. It is often easier for me to commit to a small channel than to immediately integrate packages upstream, and sometimes the ease is the difference between me packaging something or not. This also gives me a central location to share software I've packaged but not merged into Guix proper. This can help with testing, or just to enumerate packages I need to get merged.
+
+Although this is not Guix proper, commits to this channel imply stability at the time the commit was made. Please note that unless kept up to date with Guix proper, or merged, this stability will degrade over time.
+
+* Usage
+
+To use this channel, place the following in =$XDG_CONFIG_HOME/guix/channels.scm=
+
+#+BEGIN_SRC scheme
+(cons (channel
+        (name 'katco-upstream-staging)
+        (url "https://github.com/kat-co/guix-channels.git")
+        (branch "upstream-staging"))
+      %default-channels)
+#+END_SRC
