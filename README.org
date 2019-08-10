@@ -1,3 +1,15 @@
 #+TITLE: Read Me
 
-This is a repository to store [[https://guix.gnu.org/manual/en/html_node/Channels.html][Guix channels]] I use. Each channel is on a different branch. ~master~ only contains this file.
+This channel is for software which I use which will never be merged into Guix proper. Guix is a GNU project which means they will never allow packages which are non-free.
+
+* Usage
+
+To use this channel, place the following in =$XDG_CONFIG_HOME/guix/channels.scm=
+
+#+BEGIN_SRC scheme
+(cons (channel
+        (name 'katco-non-free)
+        (url "https://github.com/kat-co/guix-channels.git")
+        (branch "non-free"))
+      %default-channels)
+#+END_SRC
