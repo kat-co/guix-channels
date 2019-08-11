@@ -29,7 +29,7 @@
     (source
      (origin
        (method url-fetch)
-       (uri (string-append "mirror://github.com/"
+       (uri (string-append "https://github.com/"
                            "rsyslog/libestr/archive/"
                            "v" version ".tar.gz"))
        (sha256
@@ -62,7 +62,7 @@ functions and more, like escaping special characters.")
      (origin
        (method url-fetch)
 
-       (uri (string-append "mirror://github.com/"
+       (uri (string-append "https://github.com/"
                            "rsyslog/libfastjson/archive/"
                            "v" version ".tar.gz"))
        (sha256
@@ -93,7 +93,7 @@ essential json handling functions, sufficiently good json support (not
     (source
      (origin
        (method url-fetch)
-       (uri (string-append "mirror://github.com/"
+       (uri (string-append "https://github.com/"
                            "rsyslog/liblogging/archive/"
                            "v" version ".tar.gz"))
        (sha256

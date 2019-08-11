@@ -35,7 +35,7 @@
     (source
      (origin
        (method url-fetch)
-       (uri (string-append "mirror://github.com/"
+       (uri (string-append "https://github.com/"
                            "rsyslog/rsyslog/archive/"
                            "v" version ".tar.gz"))
        (sha256
