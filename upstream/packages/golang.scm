@@ -22,11 +22,11 @@
   #:use-module (gnu packages golang)
   #:use-module (ice-9 match))
 
-(define-public go-1.13
+(define-public go-1.13.1
   (package
     (inherit go-1.4)
     (name "go")
-    (version "1.13")
+    (version "1.13.1")
     (source
      (origin
        (method url-fetch)
@@ -34,7 +34,7 @@
                            name version ".src.tar.gz"))
        (sha256
         (base32
-         "08pibdkfrn0909rzjzn3q1wj1whk1af058qxvbbyyhhx22vbih1z"))))
+         "0n4k42bbrj5g9b1kczkfsih049v43vqzaps7n69gmfa4jpk59wc1"))))
     (arguments
      (substitute-keyword-arguments (package-arguments go-1.4)
        ((#:phases phases)
