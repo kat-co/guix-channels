@@ -24,7 +24,7 @@
 (define-public librdkafka
   (package
     (name "librdkafka")
-    (version "1.1.0")
+    (version "1.3.0")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -33,7 +33,7 @@
               (file-name (string-append name "-" version ".tar.gz"))
               (sha256
                (base32
-                "0avgp2r693zqfj0bs4i9s4m87kpx44f25lab9ccxxg0n9i04ffqj"))))
+                "1lkn7ijl7www40iqdwxsbrk60d09w1lsp43wv6l9qnxw7r9snp26"))))
     (build-system gnu-build-system)
     (arguments
      '(#:phases
