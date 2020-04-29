@@ -152,7 +152,7 @@ algorithm implementations.")
 (define-public apache-thrift
   (package
     (name "apache-thrift")
-    (version "0.12.0")
+    (version "0.13.0")
     (source
      (origin
        (method url-fetch)
@@ -161,7 +161,7 @@ algorithm implementations.")
               version ".tar.gz"))
        (sha256
         (base32
-         "0rhk1c0hrkldx6x2aafwws70kypqza6f6jib1mc3mi66fcc2sidp"))))
+         "1nbsbw2w9n558f58rrr1qv736g0rimifmvhxh3qg9109ws4019jx"))))
     (build-system gnu-build-system)
     (arguments
      '(#:tests? #f
@@ -178,7 +178,7 @@ algorithm implementations.")
        ("bison" ,bison)
        ("boost" ,boost)
        ("libressl" ,libressl)))
-    (outputs '("out" "lib"))
+    (outputs '("out" "lib" "include"))
     (home-page "https://thrift.apache.org/")
     (synopsis
      "Thrift is a lightweight, language-independent software stack for
