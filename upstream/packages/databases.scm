@@ -97,21 +97,38 @@
              ;; have this feature
              "-DARROW_DEPENDENCY_SOURCE=SYSTEM"
 
-             ;; Install to PREFIX/lib (the default is
-             ;; PREFIX/lib64).
-             (string-append "-DCMAKE_INSTALL_LIBDIR="
+             ;; Split output into its component packages.
+             (string-append "-DCMAKE_INSTALL_PREFIX="
                             (assoc-ref %outputs "lib"))
+             (string-append "-DCMAKE_INSTALL_RPATH="
+                            (assoc-ref %outputs "lib")
+                            "/lib")
              (string-append "-DCMAKE_INSTALL_BINDIR="
-                            (assoc-ref %outputs "out"))
+                            (assoc-ref %outputs "out")
+                            "/bin")
              (string-append "-DCMAKE_INSTALL_INCLUDEDIR="
-                            (assoc-ref %outputs "include"))
+                            (assoc-ref %outputs "include")
+                            "/share/include")
 
 
              "-DARROW_WITH_SNAPPY=ON"
              "-DARROW_WITH_ZLIB=ON"
              "-DARROW_WITH_ZSTD=ON"
              "-DARROW_WITH_LZ4=ON"
-
+             "-DARROW_COMPUTE=ON"
+             "-DARROW_CSV=ON"
+             "-DARROW_DATASET=ON"
+             "-DARROW_FILESYSTEM=ON"
+             "-DARROW_HDFS=ON"
+             "-DARROW_JSON=ON"
+             ;; Arrow Python C++ integration library (required for
+             ;; building pyarrow). This library must be built against
+             ;; the same Python version for which you are building
+             ;; pyarrow. NumPy must also be installed. Enabling this
+             ;; option also enables ARROW_COMPUTE, ARROW_CSV,
+             ;; ARROW_DATASET, ARROW_FILESYSTEM, ARROW_HDFS, and
+             ;; ARROW_JSON.
+             "-DARROW_PYTHON=ON"
 
              ;; Building the tests forces on all the
              ;; optional features and the use of static
@@ -207,11 +224,28 @@ stack to build interoperable RPC clients and servers.")
          (add-after 'enter-source-directory 'autogen-sh
            (lambda _
              (setenv "NOCONFIGURE" "1")
-             (invoke "sh" "autogen.sh"))))
+             (invoke "sh" "autogen.sh")))
+         (add-after 'install 'transfer-gir-files
+           (lambda* (#:key outputs #:allow-other-keys)
+             ;; The configure file doesn't respect the docdir or
+             ;; htmldir flags. Specifying the datadir flag works, but
+             ;; the gir files are also stored in the doc package.
+             ;; Technically this is correct, but in practice the gir
+             ;; files should live with the library files.
+             (let ((out (assoc-ref outputs "out"))
+                   (doc (assoc-ref outputs "doc")))
+               (rename-file (string-append doc "/share/gir-1.0")
+                            (string-append out "/share/gir-1.0"))))))
        #:configure-flags
-       (list "--enable-gtk-doc")))
+       (list
+        ;; Speeds up one-time build. Guix builds are always built from
+        ;; scratch effectively making them one-time builds.
+        "--disable-dependency-tracking"
+        "--enable-gtk-doc"
+        (string-append "--datadir=" (assoc-ref %outputs "doc")
+                       "/share"))))
     (propagated-inputs
-     `(("apache-arrow" ,apache-arrow)))
+     `(("apache-arrow" ,apache-arrow "lib")))
     (native-inputs
      `(("autoconf" ,autoconf)
        ("autoconf-archive" ,autoconf-archive)
@@ -223,6 +257,7 @@ stack to build interoperable RPC clients and servers.")
      `(("glib" ,glib)
        ("gobject-introspection" ,gobject-introspection)
        ("gtk-doc" ,gtk-doc)))
+    (outputs '("out" "doc"))
     (synopsis
      "Arrow GLib is a wrapper library for Arrow C++. Arrow GLib
 provides C API.")
