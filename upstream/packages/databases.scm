@@ -47,11 +47,10 @@
   #:use-module (gnu packages tls)
   #:use-module (gnu packages web))
 
-
 (define-public apache-arrow
   (package
     (name "apache-arrow")
-    (version "0.15.1")
+    (version "0.17.0")
     (source
      (origin
        (method git-fetch)
@@ -61,7 +60,7 @@
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1il4jpqn2fizjli62bmd82xjbjwqyg5v2whnqfm196yk2gb6z6l4"))))
+         "18kigl0mygxybad189wal5z6ncdhfmkgqihndgl7nx4yy5437nsj"))))
     (build-system cmake-build-system)
     (arguments
      `(#:tests? #f
@@ -79,7 +78,10 @@
        #:build-type "Release"
        #:configure-flags
        (list "-DARROW_PYTHON=ON"
+             "-DARROW_GLOG=ON"
+             ;; Parquet options
              "-DARROW_PARQUET=ON"
+             "-DPARQUET_BUILD_EXECUTABLES=ON"
              ;; The maintainers disallow using system versions of
              ;; jemalloc:
              ;; https://issues.apache.org/jira/browse/ARROW-3507. This
@@ -98,16 +100,18 @@
              ;; Install to PREFIX/lib (the default is
              ;; PREFIX/lib64).
              (string-append "-DCMAKE_INSTALL_LIBDIR="
-                            (assoc-ref %outputs "out")
-                            "/lib")
+                            (assoc-ref %outputs "lib"))
+             (string-append "-DCMAKE_INSTALL_BINDIR="
+                            (assoc-ref %outputs "out"))
+             (string-append "-DCMAKE_INSTALL_INCLUDEDIR="
+                            (assoc-ref %outputs "include"))
 
-             ;; XXX These Guix package offer static
-             ;; libraries that are not position independent,
-             ;; and ld fails to link them into the arrow .so
-             "-DARROW_WITH_SNAPPY=OFF"
-             "-DARROW_WITH_ZLIB=OFF"
-             "-DARROW_WITH_ZSTD=OFF"
-             "-DARROW_WITH_LZ4=OFF"
+
+             "-DARROW_WITH_SNAPPY=ON"
+             "-DARROW_WITH_ZLIB=ON"
+             "-DARROW_WITH_ZSTD=ON"
+             "-DARROW_WITH_LZ4=ON"
+
 
              ;; Building the tests forces on all the
              ;; optional features and the use of static
@@ -123,23 +127,20 @@
        ("snappy" ,snappy)
        ("gflags" ,gflags)
        ("glog" ,glog)
-       ("apache-thrift" ,apache-thrift)
-       ("apache-thrift:lib" ,apache-thrift "lib")
+       ("apache-thrift" ,apache-thrift "lib")
        ("protobuf" ,protobuf)
        ("rapidjson" ,rapidjson)
        ("zlib" ,zlib)
        ("bzip2" ,bzip2)
        ("lz4" ,lz4)
-       ("zstd" ,zstd)
+       ("zstd" ,zstd "lib")
        ("re2" ,re2)
        ("grpc" ,grpc)
-
-       ("flatbuffers" ,flatbuffers)
-       ;;("jemalloc" ,jemalloc)
        ("python-3" ,python)
        ("python-numpy" ,python-numpy)))
     (native-inputs
      `(("pkg-config" ,pkg-config)))
+    (outputs '("out" "lib" "include"))
     (home-page "https://arrow.apache.org/")
     (synopsis "Columnar in-memory analytics")
     (description "Apache Arrow is a columnar in-memory analytics layer
