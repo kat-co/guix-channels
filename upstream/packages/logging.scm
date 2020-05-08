@@ -81,10 +81,10 @@
            ;; autogen.sh calls configure at the end of the script.
            (replace 'bootstrap
              (lambda _ (invoke "autoreconf" "-vfi")))
-           (add-after 'install 'transfer-modules
+           (add-after 'build 'transfer-modules
              (lambda* (#:key outputs #:allow-other-keys)
                (let* ((out (assoc-ref outputs "out"))
-                      (mod (string-append out "/lib/rsyslog/"))
+                      (mod (string-append out "/lib/rsyslog"))
                       (move-module
                        (lambda (name)
                          (let* ((new-dir (string-append
@@ -103,7 +103,8 @@
                                 (newline)
                                 (rename-file old-file new-file)))
                             (find-files mod (string-append "^" name)))))))
-                 (for-each move-module (list ,@modules))))))
+                 (for-each move-module (list ,@modules)))
+               #t)))
          #:configure-flags
          (list
           "--enable-largefile"
