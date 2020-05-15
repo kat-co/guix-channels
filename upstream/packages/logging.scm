@@ -197,7 +197,7 @@
          ("libfastjson" ,libfastjson)
          ("liblogging" ,liblogging)
          ("libz" ,zlib)
-         ("libuuid" ,util-linux)
+         ("libuuid" ,util-linux "lib")
          ("libgcrypt" ,libgcrypt)
          ("libcurl" ,curl)
          ("liblognorm" ,liblognorm "lib")
