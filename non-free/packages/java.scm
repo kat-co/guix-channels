@@ -59,7 +59,7 @@
                        ;; Remove the filecount & filesize options
                        ((":filecount=.+$") "")))))))
    (inputs
-    `(("openjdk" ,openjdk12)))
+    `(("openjdk" ,openjdk14)))
    (home-page "https://www.elastic.co/elasticsearch/")
    (synopsis "Open Source, Distributed, RESTful Search Engine")
    (description
