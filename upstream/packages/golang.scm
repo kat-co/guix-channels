@@ -17,26 +17,36 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix git-download)
   #:use-module (guix build-system)
   #:use-module (guix utils)
+  #:use-module (gnu packages)
   #:use-module (gnu packages golang)
   #:use-module (ice-9 match))
 
-(define-public go-1.13
+
+(define-public go-1.16
   (package
     (inherit go-1.4)
     (name "go")
-    (version "1.13")
+    (version "1.16")
     (source
      (origin
-       (method url-fetch)
-       (uri (string-append "https://storage.googleapis.com/golang/"
-                           name version ".src.tar.gz"))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/golang/go")
+             (commit (string-append "go" version))))
+       (file-name (git-file-name name version))
        (sha256
         (base32
-         "08pibdkfrn0909rzjzn3q1wj1whk1af058qxvbbyyhhx22vbih1z"))))
+         "03d86871r3n3q3wqwqg91x2jb1dsh164h2jdcg5ymxgk6qcwsbks"))))
     (arguments
      (substitute-keyword-arguments (package-arguments go-1.4)
+       ((#:system system)
+        (if (string-prefix? "aarch64-linux" (or (%current-system)
+                                                (%current-target-system)))
+          "aarch64-linux"
+          system))
        ((#:phases phases)
         `(modify-phases ,phases
            (replace 'prebuild
@@ -49,18 +59,33 @@
                        (string-append (assoc-ref inputs "tzdata") "/share/zoneinfo"))
                       (output (assoc-ref outputs "out")))
 
+                 ;; Having the patch in the 'patches' field of <origin> breaks
+                 ;; the 'TestServeContent' test due to the fact that
+                 ;; timestamps are reset.  Thus, apply it from here.
+                 (invoke "patch" "-p2" "--force" "-i"
+                         (assoc-ref inputs "go-skip-gc-test.patch"))
+
                  ;; A side effect of these test scripts is testing
-                 ;; cgo. Attempts at using cgo flags and directives
-                 ;; with these scripts as specified here
-                 ;; (https://golang.org/cmd/cgo/) have not worked. The
-                 ;; tests continue to state that they can not find
-                 ;; object files/headers despite being present.
+                 ;; cgo. Attempts at using cgo flags and directives with these
+                 ;; scripts as specified here (https://golang.org/cmd/cgo/)
+                 ;; have not worked. The tests continue to state that they can
+                 ;; not find object files/headers despite being present.
                  (for-each
                   delete-file
                   '("cmd/go/testdata/script/mod_case_cgo.txt"
                     "cmd/go/testdata/script/list_find.txt"
                     "cmd/go/testdata/script/list_compiled_imports.txt"
-                    "cmd/go/testdata/script/cgo_syso_issue29253.txt"))
+                    "cmd/go/testdata/script/cgo_syso_issue29253.txt"
+                    "cmd/go/testdata/script/cover_cgo.txt"
+                    "cmd/go/testdata/script/cover_cgo_xtest.txt"
+                    "cmd/go/testdata/script/cover_cgo_extra_test.txt"
+                    "cmd/go/testdata/script/cover_cgo_extra_file.txt"
+                    "cmd/go/testdata/script/ldflag.txt"
+                    "cmd/go/testdata/script/link_syso_issue33139.txt"
+                    "cmd/go/testdata/script/cgo_path_space.txt"
+                    "cmd/go/testdata/script/cgo_path.txt"))
+
+                 (for-each make-file-writable (find-files "."))
 
                  (substitute* "os/os_test.go"
                    (("/usr/bin") (getcwd))
@@ -90,10 +115,10 @@
                  ;; nor necessary for the build to succeed.
                  (for-each
                   (match-lambda
-                   ((file regex)
-                    (substitute* file
-                      ((regex all before test_name)
-                       (string-append before "Disabled" test_name)))))
+                    ((file regex)
+                     (substitute* file
+                       ((regex all before test_name)
+                        (string-append before "Disabled" test_name)))))
                   '(("net/net_test.go" "(.+)(TestShutdownUnix.+)")
                     ("net/dial_test.go" "(.+)(TestDialTimeout.+)")
                     ("net/cgo_unix_test.go" "(.+)(TestCgoLookupPort.+)")
@@ -128,6 +153,10 @@
                     ("syscall/exec_linux_test.go"
                      "(.+)(TestCloneNEWUSERAndRemapNoRootDisableSetgroups.+)")))
 
+                 ;; These tests fail on aarch64-linux
+                 (substitute* "cmd/dist/test.go"
+                   (("t.registerHostTest\\(\"testsanitizers/msan.*") ""))
+
                  ;; fix shebang for testar script
                  ;; note the target script is generated at build time.
                  (substitute* "../misc/cgo/testcarchive/carchive_test.go"
@@ -159,7 +188,6 @@
                  (setenv "GOROOT_FINAL" output)
                  (setenv "CGO_ENABLED" "1")
                  (invoke "sh" "all.bash"))))
-
            (replace 'install
              ;; TODO: Most of this could be factorized with Go 1.4.
              (lambda* (#:key outputs #:allow-other-keys)
@@ -197,9 +225,10 @@
                  #t)))))))
     (native-inputs
      `(("go" ,go-1.4)
+       ("go-skip-gc-test.patch" ,(search-patch "go-skip-gc-test.patch"))
        ,@(match (%current-system)
-                ((or "armhf-linux" "aarch64-linux")
-                 `(("gold" ,binutils-gold)))
-                (_ `()))
+           ((or "armhf-linux" "aarch64-linux")
+            `(("gold" ,binutils-gold)))
+           (_ `()))
        ,@(package-native-inputs go-1.4)))
     (supported-systems %supported-systems)))
