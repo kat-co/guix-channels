@@ -210,7 +210,7 @@
          ("openssl" ,openssl)
          ("gnutls" ,gnutls)
          ("libnet" ,libnet)
-         ("librdkafka" ,upstream:librdkafka)
+         ("librdkafka" ,librdkafka)
          ("lz4" ,lz4)
          ("czmq" ,czmq)
          ("zeromq" ,zeromq)
