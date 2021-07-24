@@ -18,42 +18,45 @@
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (gnu packages python)
-  #:use-module (gnu packages compression))
+  #:use-module (gnu packages xorg)
+  #:use-module (gnu packages pkg-config))
 
-(define-public librdkafka
+(define-public atheepmgr
   (package
-    (name "librdkafka")
-    (version "1.3.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://github.com/edenhill/librdkafka/archive/v"
-                    version ".tar.gz"))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "1lkn7ijl7www40iqdwxsbrk60d09w1lsp43wv6l9qnxw7r9snp26"))))
+    (name "atheepmgr")
+    (version "2.1.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri
+        (string-append
+         "https://github.com/rsa9000/atheepmgr/archive/refs/tags/"
+         "atheepmgr-" version ".tar.gz"))
+       (sha256
+        (base32
+         "0bgcspnxf9vg8aa2fgm8yyrnvvcxfzk8n9pymdzpypx8ylki4zs8"))))
     (build-system gnu-build-system)
     (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (replace 'configure
-           ;; its custom configure script doesn't understand 'CONFIG_SHELL'.
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               ;; librdkafka++.so lacks RUNPATH for librdkafka.so
-               (setenv "LDFLAGS"
-                       (string-append "-Wl,-rpath=" out "/lib"))
-               (invoke "./configure"
-                       (string-append "--prefix=" out))))))))
+     `(#:tests? #f                      ; No tests in the codebase
+       #:parallel-build? #f             ; Breaks generating config.h
+       #:phases (modify-phases %standard-phases
+                  (delete 'configure)
+                  (replace 'install
+                    (lambda* (#:key outputs #:allow-other-keys)
+                      (let ((out (assoc-ref outputs "out")))
+                        (install-file "atheepmgr"
+                                      (string-append out "/bin")))))
+                  (add-before 'build 'set-CC
+                    (lambda _
+                      (setenv "CC" "gcc")
+                      #t)))))
+    (inputs
+     `(("libpciaccess" ,libpciaccess)))
     (native-inputs
-     `(("python" ,python-wrapper)))
-    (propagated-inputs
-     `(("zlib" ,zlib))) ; in the Libs.private field of rdkafka.pc
-    (home-page "https://github.com/edenhill/librdkafka")
-    (synopsis "Apache Kafka C/C++ client library")
+     `(("pkg-config" ,pkg-config)))
+    (home-page "https://github.com/rsa9000/atheepmgr")
+    (synopsis "Atheros EEPROM manager")
     (description
-     "librdkafka is a C library implementation of the Apache Kafka protocol,
-containing both Producer and Consumer support.")
-    (license license:bsd-2)))
+     "A utility to dump and update the EEPROM content of Atheros based
+wireless NICs.")
+    (license license:isc)))
