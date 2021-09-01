@@ -38,7 +38,7 @@
     (build-system copy-build-system)
     (arguments
      `(#:install-plan
-       '(("." "opt/kolide/bin" #:exclude ("package-builder")))))
+       '(("." "bin" #:exclude ("package-builder")))))
     (native-inputs
      `(("unzip" ,unzip)))
     (supported-systems '("x86_64-linux"))
