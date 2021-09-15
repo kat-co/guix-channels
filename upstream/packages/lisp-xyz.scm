@@ -142,3 +142,35 @@ library.")
 
 (define-public ecl-oneam
   (sbcl-package->ecl-package sbcl-oneam))
+
+(define-public sbcl-inotify
+  (let ((commit "8ad433f646f0dd2205dbb2ec52663d6e9c0d9afe")
+        (revision "1")
+        (site "https://github.com/stassats/inotify"))
+    (package
+     (name "sbcl-inotify")
+     (version (git-version "0.0.0" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url site)
+             (commit commit)))
+       (file-name (git-file-name "sbcl-inotify" version))
+       (sha256
+        (base32 "0jill05wsa7xbnkycc1ik1a05slv2h34fpyap2rxbnxvfjvyzw98"))))
+     (build-system asdf-build-system/sbcl)
+     (inputs
+      `(("cffi" ,sbcl-cffi)
+        ("iolib" ,sbcl-iolib)))
+     (home-page site)
+     (synopsis "FFI to inotify(7) for Common Lisp")
+     (description
+      "Interface to linux inotify(7).")
+     (license license:public-domain))))
+
+(define-public cl-inotify
+  (sbcl-package->cl-source-package sbcl-inotify))
+
+(define-public ecl-inotify
+  (sbcl-package->ecl-package sbcl-inotify))
