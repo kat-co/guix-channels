@@ -229,3 +229,26 @@ issues with JIRA issue servers.")
 from within Emacs.  Restclient runs queries from a plan-text query sheet,
 displays results pretty-printed in XML or JSON with @code{restclient-mode}")
      (license license:public-domain))))
+
+(define-public emacs-ob-restclient
+  (let ((commit "bfbc4d8e8a348c140f9328542daf5d979f0993e2"))
+    (package
+      (name "emacs-ob-restclient")
+      (version (git-version "0.02" "3" commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/alf/ob-restclient.el")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0nq5w2gankvb7ix8rv33814j7qvhiawd9r15b9i6syn1i5k5pxhj"))))
+      (propagated-inputs
+       `(("emacs-restclient" ,emacs-restclient)))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/alf/ob-restclient.el")
+      (synopsis "Org-babel functionality for @code{restclient-mode}")
+      (description
+       "This package integrates @code{restclient-mode} with Org.")
+      (license license:gpl3+))))
