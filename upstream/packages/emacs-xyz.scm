@@ -200,3 +200,32 @@ Entrypoints:
       "This package provides an extension to org-mode for syncing
 issues with JIRA issue servers.")
      (license license:gpl3+))))
+
+(define-public emacs-restclient
+  (let ((commit "176d9cb6552f04d98c33e29fc673862bdf3bca03")
+        (version "0")
+        (revision "4"))
+    (package
+     (name "emacs-restclient")
+     (version (git-version version revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/pashky/restclient.el")
+             (commit commit)))
+       (sha256
+        (base32
+         "108znxclz80rgymx1kmw107afay6sr0042yfyy207b5ki36vghl1"))
+       (file-name (git-file-name name version))))
+     (build-system emacs-build-system)
+     (propagated-inputs
+      `(("emacs-helm" ,emacs-helm)
+        ("emacs-jq-mode" ,emacs-jq-mode)))
+     (home-page "https://github.com/pashky/restclient.el")
+     (synopsis "Explore and test HTTP REST webservices")
+     (description
+      "This tool allows for testing and exploration of HTTP REST Web services
+from within Emacs.  Restclient runs queries from a plan-text query sheet,
+displays results pretty-printed in XML or JSON with @code{restclient-mode}")
+     (license license:public-domain))))
