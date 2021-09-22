@@ -25,39 +25,42 @@
   #:use-module (upstream packages databases)
   #:use-module (upstream packages networking))
 
-(define-public sbcl-cl-apache-arrow
-  (let ((commit "486481a28a9e0056a1826167f65fa5a07fd08499"))
-    (package
-      (name "sbcl-cl-apache-arrow")
-      (version (git-version "1.0.0" "1" commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/kat-co/cl-apache-arrow.git")
-               (commit commit)))
-         (sha256
-          (base32
-           "0fg7j1pcpk6x620fjsijzvf5sj3igiayf5l7f4qx0hpdz7rqwk5i"))))
-      (build-system asdf-build-system/sbcl)
-      (arguments
-       ;; Tests use Rove which is a package-inferred system
-       `(#:tests? #f))
-      (inputs
-       `(("cl-gobject-introspection" ,sbcl-cl-gobject-introspection)
-         ("closer-mop" ,sbcl-closer-mop)
-         ("trivial-garbage" ,sbcl-trivial-garbage)
-         ("apache-arrow" ,apache-arrow "lib")
-         ("apache-arrow-c-glib" ,apache-arrow-c-glib)))
-      (home-page "https://github.com/kat-co/cl-apache-arrow")
-      (synopsis
-       "A library for working with Apache Arrow and Parquet data.")
-      (description
-       "This is a library for working with Apache Arrow and Parquet
-data. It is a wrapper around the official Apache GLib library using
-GObject Introspection, which in turn is a wrapper around the C++
-library.")
-      (license license:asl2.0))))
+;; (define-public sbcl-cl-apache-arrow
+;;   (let ((commit "486481a28a9e0056a1826167f65fa5a07fd08499"))
+;;     (package
+;;       (name "sbcl-cl-apache-arrow")
+;;       (version (git-version "1.0.0" "1" commit))
+;;       (source
+;;        (origin
+;;          (method git-fetch)
+;;          (uri (git-reference
+;;                (url "https://github.com/kat-co/cl-apache-arrow.git")
+;;                (commit version)))
+;;          (file-name (git-file-name name version))
+;;          (sha256
+;;           (base32
+;;            "0fg7j1pcpk6x620fjsijzvf5sj3igiayf5l7f4qx0hpdz7rqwk5i"))))
+;;       (build-system asdf-build-system/sbcl)
+;;       ;; (arguments
+;;       ;;  ;; Tests use Rove which is a package-inferred system
+;;       ;;  `(#:tests? #f))
+;;       (inputs
+;;        `(("cl-gobject-introspection" ,sbcl-cl-gobject-introspection)
+;;          ("closer-mop" ,sbcl-closer-mop)
+;;          ("trivial-garbage" ,sbcl-trivial-garbage)
+;;          ("apache-arrow" ,apache-arrow "lib")
+;;          ("apache-arrow-c-glib" ,apache-arrow-c-glib)))
+;;       (native-inputs
+;;        `(("rove" ,cl-rove)))
+;;       (home-page "https://github.com/kat-co/cl-apache-arrow")
+;;       (synopsis
+;;        "A library for working with Apache Arrow and Parquet data.")
+;;       (description
+;;        "This is a library for working with Apache Arrow and Parquet
+;; data. It is a wrapper around the official Apache GLib library using
+;; GObject Introspection, which in turn is a wrapper around the C++
+;; library.")
+;;       (license license:asl2.0))))
 
 (define-public sbcl-oneam
   (let ((commit "8b1da94eca4613fd8a20bdf63f0e609e379b0ba5"))
