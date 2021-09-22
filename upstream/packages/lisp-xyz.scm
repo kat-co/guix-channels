@@ -25,61 +25,6 @@
   #:use-module (upstream packages databases)
   #:use-module (upstream packages networking))
 
-;; (define-public sbcl-prometheus.collectors.sbcl
-;;   (package
-;;     (inherit sbcl-prometheus)
-;;     (name "sbcl-prometheus.collectors.sbcl")
-;;     (inputs `(("prometheus" ,sbcl-prometheus)))
-;;     (synopsis "Prometheus collector for SBCL metrics.")
-;;     (description "Prometheus collector for SBCL metrics.")))
-
-;; (define-public sbcl-prometheus.collectors.process
-;;   (package
-;;     (inherit sbcl-prometheus)
-;;     (name "sbcl-prometheus.collectors.process")
-;;     (inputs
-;;      `(("prometheus" ,sbcl-prometheus)
-;;        ("cl-fad" ,sbcl-cl-fad)
-;;        ("split-sequence" ,sbcl-split-sequence)
-;;        ("cffi" ,sbcl-cffi)
-;;        ("cffi-groven" ,sbcl-cffi-grovel)))
-;;     (synopsis "Prometheus collector for process metrics.")
-;;     (description "Prometheus collector for process metrics.")))
-
-;; (define-public sbcl-prometheus.formats.text
-;;   (package
-;;     (inherit sbcl-prometheus)
-;;     (name "sbcl-prometheus.formats.text")
-;;     (inputs
-;;      `(("prometheus" ,sbcl-prometheus)
-;;        ("alexandria" ,sbcl-alexandria)))
-;;     (synopsis "Prometheus client text format.")
-;;     (description "Prometheus client text format.")))
-
-;; (define-public sbcl-prometheus.exposers.hunchentoot
-;;   (package
-;;     (inherit sbcl-prometheus)
-;;     (name "sbcl-prometheus.exposers.hunchentoot")
-;;     (inputs
-;;      `(("prometheus" ,sbcl-prometheus)
-;;        ("prometheus.formats.text" ,sbcl-prometheus.formats.text)
-;;        ("hunchentoot" ,sbcl-hunchentoot)
-;;        ("trivial-utf-8" ,sbcl-trivial-utf-8)
-;;        ("salza2" ,sbcl-salza2)))
-;;     (synopsis "Prometheus collector for Hunchentoot metrics")
-;;     (description "Prometheus collector for Hunchentoot metrics")))
-
-;; (define-public sbcl-prometheus.pushgateway
-;;   (package
-;;     (inherit sbcl-prometheus)
-;;     (name "sbcl-prometheus.pushgateway")
-;;     (inputs
-;;      `(("prometheus" ,sbcl-prometheus)
-;;        ("prometheus.formats.text" ,sbcl-prometheus.formats.text)
-;;        ("drakma" ,sbcl-drakma)))
-;;     (synopsis "Prometheus Pushgateway client.")
-;;     (description "Prometheus Pushgateway client.")))
-
 (define-public sbcl-cl-apache-arrow
   (let ((commit "486481a28a9e0056a1826167f65fa5a07fd08499"))
     (package
