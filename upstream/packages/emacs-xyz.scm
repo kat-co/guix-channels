@@ -1,4 +1,4 @@
-;;; Copyright © 2020 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2021 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -202,9 +202,9 @@ issues with JIRA issue servers.")
      (license license:gpl3+))))
 
 (define-public emacs-restclient
-  (let ((commit "176d9cb6552f04d98c33e29fc673862bdf3bca03")
+  (let ((commit "94d2e8421fa14d0e3307d70e1d1e2db9d43b2f95")
         (version "0")
-        (revision "4"))
+        (revision "5"))
     (package
      (name "emacs-restclient")
      (version (git-version version revision commit))
@@ -216,7 +216,7 @@ issues with JIRA issue servers.")
              (commit commit)))
        (sha256
         (base32
-         "108znxclz80rgymx1kmw107afay6sr0042yfyy207b5ki36vghl1"))
+         "0c9z6316pdi30w63a4zqn3b84ciqgxfi7mal6rd3micxg6qpv27c"))
        (file-name (git-file-name name version))))
      (build-system emacs-build-system)
      (propagated-inputs
