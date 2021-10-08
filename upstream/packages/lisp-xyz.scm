@@ -1,4 +1,4 @@
-;;; Copyright © 2020 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2021 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -122,3 +122,72 @@
 
 (define-public ecl-inotify
   (sbcl-package->ecl-package sbcl-inotify))
+
+(define-public sbcl-generic-comparability
+  (let ((commit "53fc2846319a6eb46b36581e203e1f1542a8acff")
+        (revision "1"))
+    (package
+      (name "sbcl-generic-comparability")
+      (version (git-version "1.0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/pnathan/generic-comparability")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "01ma0cwirxarwwmdwflnh8kmysmr2smh5kyvzhb2074ljxg8yq2p"))))
+      (build-system asdf-build-system/sbcl)
+      (inputs
+       `(("alexandria" ,sbcl-alexandria)))
+      (native-inputs
+       `(("alexandria" ,sbcl-alexandria)
+         ("fiveam" ,sbcl-fiveam)))
+      (home-page "https://github.com/pnathan/generic-comparability")
+      (synopsis "Implementation of cdr-8")
+      (description
+       "CDR-8 provides an interface for the EQUALS function, which is defined as
+a general equality predicate, as well as a set of ordering (COMPARE) functions
+for comparison.  The semantics are described in the CDR-8 standard.")
+      (license license:llgpl))))
+
+(define-public cl-generic-comparability
+  (sbcl-package->cl-source-package sbcl-generic-comparability))
+
+(define-public ecl-generic-comparability
+  (sbcl-package->ecl-package sbcl-generic-comparability))
+
+(define-public sbcl-pp-toml
+  (let ((commit "5a65c1855b15ddf370d140f7cd75f5a9dbae40c3")
+        (revision "1"))
+    (package
+      (name "sbcl-pp-toml")
+      (version (git-version "1.0.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/pnathan/pp-toml")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "1hf3j7blj25s6grc1q2ia48a9q2n0wrsy97plp4xawhrw60959pr"))))
+      (build-system asdf-build-system/sbcl)
+      (inputs
+       `(("alexandria" ,sbcl-alexandria)
+         ("cl-ppcre" ,sbcl-cl-ppcre)
+         ("generic-comparability" ,sbcl-generic-comparability)
+         ("local-time" ,sbcl-local-time)
+         ("parse-number" ,sbcl-parse-number)
+         ("split-sequence" ,sbcl-split-sequence)
+         ("esrap" ,sbcl-esrap)))
+      (home-page "https://github.com/pnathan/pp-toml")
+      (synopsis "Paul's Parser for Tom's Own Minimal Language")
+      (description "A Common Lisp TOML parser which supports the v0.1.0 spec.")
+      (license license:llgpl))))
+
+(define-public cl-pp-toml
+  (sbcl-package->cl-source-package sbcl-pp-toml))
