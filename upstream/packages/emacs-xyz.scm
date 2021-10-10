@@ -14,12 +14,18 @@
 ;;; along with this. If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (upstream packages emacs-xyz)
-  #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix packages)
+  #:use-module (guix build emacs-utils)
+  #:use-module (guix build utils)
+  #:use-module (guix build-system emacs)
   #:use-module (guix download)
   #:use-module (guix git-download)
-  #:use-module (guix build-system emacs)
-  #:use-module (gnu packages emacs-xyz))
+  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix packages)
+
+  #:use-module (gnu packages emacs-xyz)
+  #:use-module (gnu packages graphviz)
+
+  #:use-module (upstream packages python-xyz))
 
 (define-public emacs-ox-jira
   (package
@@ -254,8 +260,8 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
       (license license:gpl3+))))
 
 (define-public emacs-moldable-emacs
-  (let ((commit "13d909bbb32cb48a8cdaeb6f698a1d8cc38c257d")
-        (revision "2"))
+  (let ((commit "822965d53b8fbc066c2759b483eaf4b2a911b0d9")
+        (revision "1"))
     (package
       (name "emacs-moldable-emacs")
       (version (git-version "0.0.0" revision commit))
@@ -267,10 +273,24 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0hg2l3g845mncs80s8d0va463ha31vgc9bjblc8d21dwsd4d7mky"))))
+          (base32 "1l0bknns6xd1fwjqvh4zif9k22mnwjybyklg0mk72nqhr1gic4ld"))))
       (build-system emacs-build-system)
       (arguments
-       `(#:include (cons "^molds/" %default-include)))
+       `(#:include (append '("^molds/" "^tutorial") %default-include)
+         #:phases
+         (modify-phases %standard-phases
+           (add-after 'unpack 'patch-bin-locations
+             (lambda* (#:key inputs outputs #:allow-other-keys)
+               (let ((file "molds/contrib.el"))
+                 (chmod file #o644)
+                 (substitute* file
+                   (("\\(executable-find \"graph\"\\)")
+                    (string-append "(executable-find \"" (which "graph") "\")"))
+                   (("\\(executable-find \"dot\"\\)")
+                    (string-append "(executable-find \"" (which "graph") "\")")))))))))
+      (inputs
+       `(("graphviz" ,graphviz)
+         ("graph-cli" ,python-graph-cli)))
       (propagated-inputs
        `(("emacs-dash" ,emacs-dash)
          ("emacs-s" ,emacs-s)
