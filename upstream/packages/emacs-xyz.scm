@@ -252,3 +252,30 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
       (description
        "This package integrates @code{restclient-mode} with Org.")
       (license license:gpl3+))))
+
+(define-public emacs-moldable-emacs
+  (let ((commit "13d909bbb32cb48a8cdaeb6f698a1d8cc38c257d"))
+    (package
+      (name "emacs-moldable-emacs")
+      (version (git-version "0.0.0" "1" commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/ag91/moldable-emacs")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0hg2l3g845mncs80s8d0va463ha31vgc9bjblc8d21dwsd4d7mky"))))
+      (inputs
+       `(("emacs-dash" ,emacs-dash)
+         ("emacs-s" ,emacs-s)
+         ("emacs-async" ,emacs-async)))
+      (build-system emacs-build-system)
+      (home-page "https://github.com/ag91/moldable-emacs")
+      (synopsis "Adapting Emacs for moldable development ")
+      (description
+       "This is an extension of Emacs aiming to enable Moldable
+Development. Or better still, aiming to make you a better story teller
+when you deal with code.")
+      (license license:gpl3+))))
