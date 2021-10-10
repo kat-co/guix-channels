@@ -254,10 +254,11 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
       (license license:gpl3+))))
 
 (define-public emacs-moldable-emacs
-  (let ((commit "13d909bbb32cb48a8cdaeb6f698a1d8cc38c257d"))
+  (let ((commit "13d909bbb32cb48a8cdaeb6f698a1d8cc38c257d")
+        (revision "2"))
     (package
       (name "emacs-moldable-emacs")
-      (version (git-version "0.0.0" "1" commit))
+      (version (git-version "0.0.0" revision commit))
       (source
        (origin
          (method git-fetch)
@@ -267,11 +268,13 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
          (file-name (git-file-name name version))
          (sha256
           (base32 "0hg2l3g845mncs80s8d0va463ha31vgc9bjblc8d21dwsd4d7mky"))))
-      (inputs
+      (build-system emacs-build-system)
+      (arguments
+       `(#:include (cons "^molds/" %default-include)))
+      (propagated-inputs
        `(("emacs-dash" ,emacs-dash)
          ("emacs-s" ,emacs-s)
          ("emacs-async" ,emacs-async)))
-      (build-system emacs-build-system)
       (home-page "https://github.com/ag91/moldable-emacs")
       (synopsis "Adapting Emacs for moldable development ")
       (description
