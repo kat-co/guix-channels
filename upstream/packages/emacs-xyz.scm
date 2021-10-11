@@ -260,7 +260,7 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
       (license license:gpl3+))))
 
 (define-public emacs-moldable-emacs
-  (let ((commit "822965d53b8fbc066c2759b483eaf4b2a911b0d9")
+  (let ((commit "1c5726761551f9d70269434e3acc6543c0d15459")
         (revision "1"))
     (package
       (name "emacs-moldable-emacs")
@@ -273,7 +273,7 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "1l0bknns6xd1fwjqvh4zif9k22mnwjybyklg0mk72nqhr1gic4ld"))))
+          (base32 "1ki0fk7rc002zazqh779vr6s0aqpj4ms160h7na290rkwx1wmfyv"))))
       (build-system emacs-build-system)
       (arguments
        `(#:include (append '("^molds/" "^tutorial") %default-include)
