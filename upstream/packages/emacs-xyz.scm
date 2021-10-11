@@ -261,7 +261,7 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
 
 (define-public emacs-moldable-emacs
   (let ((commit "1c5726761551f9d70269434e3acc6543c0d15459")
-        (revision "1"))
+        (revision "2"))
     (package
       (name "emacs-moldable-emacs")
       (version (git-version "0.0.0" revision commit))
@@ -281,20 +281,26 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
          (modify-phases %standard-phases
            (add-after 'unpack 'patch-bin-locations
              (lambda* (#:key inputs outputs #:allow-other-keys)
-               (let ((file "molds/contrib.el"))
+               (let ((file "molds/contrib.el")
+                     (graph-bin (which "graph"))
+                     (dot-bin (which "dot")))
                  (chmod file #o644)
                  (substitute* file
                    (("\\(executable-find \"graph\"\\)")
-                    (string-append "(executable-find \"" (which "graph") "\")"))
+                    (string-append "(executable-find \"" graph-bin "\")"))
                    (("\\(executable-find \"dot\"\\)")
-                    (string-append "(executable-find \"" (which "graph") "\")")))))))))
+                    (string-append "(executable-find \"" dot-bin "\")"))
+                   (("\"graph ")
+                    (string-append "\"" graph-bin " ")))))))))
       (inputs
        `(("graphviz" ,graphviz)
          ("graph-cli" ,python-graph-cli)))
       (propagated-inputs
        `(("emacs-dash" ,emacs-dash)
          ("emacs-s" ,emacs-s)
-         ("emacs-async" ,emacs-async)))
+         ("emacs-async" ,emacs-async)
+         ("emacs-json-mode" ,emacs-json-mode)
+         ("emacs-csv-mode" ,emacs-csv-mode)))
       (home-page "https://github.com/ag91/moldable-emacs")
       (synopsis "Adapting Emacs for moldable development ")
       (description

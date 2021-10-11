@@ -20,20 +20,22 @@
   #:use-module (guix packages)
 
   #:use-module (gnu packages python-science)
-  #:use-module (gnu packages python-xyz))
+  #:use-module (gnu packages python-xyz)
+  #:use-module (gnu packages qt))
 
 (define-public python-graph-cli
-  (let ((commit "b69a9cb0514082e65fd262d330865b543e0a248d"))
+  (let ((commit "b69a9cb0514082e65fd262d330865b543e0a248d")
+        (revision "1"))
     (package
       (name "python-graph-cli")
-      (version "0.1.17")
+      (version (git-version "0.1.17" revision commit))
       (source
        (origin
          (method git-fetch)
          (uri (git-reference
                (url "https://github.com/mcastorina/graph-cli")
                (commit commit)))
-         (file-name (git-file-name name commit))
+         (file-name (git-file-name name version))
          (sha256
           (base32 "006mv362vmbg3cfvxp0jv547gqnw27a5s6hljq9jcdbi3nwjyv1n"))))
       (build-system python-build-system)
@@ -46,7 +48,9 @@
       (propagated-inputs
        `(("python-matplotlib" ,python-matplotlib)
          ("python-numpy" ,python-numpy)
-         ("python-pandas" ,python-pandas)))
+         ("python-pandas" ,python-pandas)
+         ;; This should probably be a requirement of `python-matplotlib'
+         ("python-pyqt" ,python-pyqt)))
       (home-page "https://github.com/mcastorina/graph-cli")
       (synopsis "A CLI utility to create graphs from CSV files.")
       (description "A CLI utility to create graphs from CSV files.")
