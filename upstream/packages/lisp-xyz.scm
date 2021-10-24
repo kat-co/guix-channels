@@ -21,75 +21,10 @@
 
   #:use-module (gnu packages lisp)
   #:use-module (gnu packages lisp-xyz)
+  #:use-module (gnu packages lisp-check)
 
   #:use-module (upstream packages databases)
   #:use-module (upstream packages networking))
-
-;; (define-public sbcl-cl-apache-arrow
-;;   (let ((commit "486481a28a9e0056a1826167f65fa5a07fd08499"))
-;;     (package
-;;       (name "sbcl-cl-apache-arrow")
-;;       (version (git-version "1.0.0" "1" commit))
-;;       (source
-;;        (origin
-;;          (method git-fetch)
-;;          (uri (git-reference
-;;                (url "https://github.com/kat-co/cl-apache-arrow.git")
-;;                (commit version)))
-;;          (file-name (git-file-name name version))
-;;          (sha256
-;;           (base32
-;;            "0fg7j1pcpk6x620fjsijzvf5sj3igiayf5l7f4qx0hpdz7rqwk5i"))))
-;;       (build-system asdf-build-system/sbcl)
-;;       ;; (arguments
-;;       ;;  ;; Tests use Rove which is a package-inferred system
-;;       ;;  `(#:tests? #f))
-;;       (inputs
-;;        `(("cl-gobject-introspection" ,sbcl-cl-gobject-introspection)
-;;          ("closer-mop" ,sbcl-closer-mop)
-;;          ("trivial-garbage" ,sbcl-trivial-garbage)
-;;          ("apache-arrow" ,apache-arrow "lib")
-;;          ("apache-arrow-c-glib" ,apache-arrow-c-glib)))
-;;       (native-inputs
-;;        `(("rove" ,cl-rove)))
-;;       (home-page "https://github.com/kat-co/cl-apache-arrow")
-;;       (synopsis
-;;        "A library for working with Apache Arrow and Parquet data.")
-;;       (description
-;;        "This is a library for working with Apache Arrow and Parquet
-;; data. It is a wrapper around the official Apache GLib library using
-;; GObject Introspection, which in turn is a wrapper around the C++
-;; library.")
-;;       (license license:asl2.0))))
-
-(define-public sbcl-oneam
-  (let ((commit "8b1da94eca4613fd8a20bdf63f0e609e379b0ba5"))
-    (package
-      (name "sbcl-oneam")
-      (version (git-version "0.0" "1" commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/lmj/1am.git")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32
-           "05ss4nz1jb9kb796295482b62w5cj29msfj8zis33sp2rw2vmv2g"))))
-      (build-system asdf-build-system/sbcl)
-      (arguments
-       `(#:asd-system-name "1am"))
-      (home-page "https://github.com/lmj/1am")
-      (synopsis "A minimal testing framework for Common Lisp.")
-      (description "A minimal testing framework for Common Lisp.")
-      (license license:expat))))
-
-(define-public cl-oneam
-  (sbcl-package->cl-source-package sbcl-oneam))
-
-(define-public ecl-oneam
-  (sbcl-package->ecl-package sbcl-oneam))
 
 (define-public sbcl-inotify
   (let ((commit "8ad433f646f0dd2205dbb2ec52663d6e9c0d9afe")
@@ -122,42 +57,6 @@
 
 (define-public ecl-inotify
   (sbcl-package->ecl-package sbcl-inotify))
-
-(define-public sbcl-generic-comparability
-  (let ((commit "53fc2846319a6eb46b36581e203e1f1542a8acff")
-        (revision "1"))
-    (package
-      (name "sbcl-generic-comparability")
-      (version (git-version "1.0.1" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/pnathan/generic-comparability")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32
-           "01ma0cwirxarwwmdwflnh8kmysmr2smh5kyvzhb2074ljxg8yq2p"))))
-      (build-system asdf-build-system/sbcl)
-      (inputs
-       `(("alexandria" ,sbcl-alexandria)))
-      (native-inputs
-       `(("alexandria" ,sbcl-alexandria)
-         ("fiveam" ,sbcl-fiveam)))
-      (home-page "https://github.com/pnathan/generic-comparability")
-      (synopsis "Implementation of cdr-8")
-      (description
-       "CDR-8 provides an interface for the EQUALS function, which is defined as
-a general equality predicate, as well as a set of ordering (COMPARE) functions
-for comparison.  The semantics are described in the CDR-8 standard.")
-      (license license:llgpl))))
-
-(define-public cl-generic-comparability
-  (sbcl-package->cl-source-package sbcl-generic-comparability))
-
-(define-public ecl-generic-comparability
-  (sbcl-package->ecl-package sbcl-generic-comparability))
 
 (define-public sbcl-pp-toml
   (let ((commit "5a65c1855b15ddf370d140f7cd75f5a9dbae40c3")
