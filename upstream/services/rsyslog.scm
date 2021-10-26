@@ -3,6 +3,7 @@
   #:use-module (ice-9 ports) ;; with-output-to-string
   #:use-module (srfi srfi-9)
 
+  #:use-module (gnu home services)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu services configuration)
   #:use-module (gnu services shepherd)
