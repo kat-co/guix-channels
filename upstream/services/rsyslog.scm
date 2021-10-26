@@ -127,7 +127,7 @@
 ;;          (serialize-isync-config #f cfg))))))
 
 (define (add-rsyslog-configuration config)
-  ``(("config/rsyslogd/config" ,(rsyslog-configuration-file config))))
+  `(("config/rsyslogd/config" ,(rsyslog-configuration-file config))))
 
 (define add-rsyslog-package
   (compose list rsyslog-configuration-package))
