@@ -1,4 +1,4 @@
-;;; Copyright © 2019 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2019, 2021 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -18,217 +18,279 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix git-download)
-  #:use-module (guix build-system)
-  #:use-module (guix utils)
-  #:use-module (gnu packages)
+  #:use-module (guix build-system go)
   #:use-module (gnu packages golang)
-  #:use-module (ice-9 match))
+  #:use-module (gnu packages syncthing))
 
-
-(define-public go-1.16
+(define-public go-github-com-aybabtme-rgbterm
   (package
-    (inherit go-1.4)
-    (name "go")
-    (version "1.16")
+    (name "go-github-com-aybabtme-rgbterm")
+    (version "0.0.0-20170906152045-cc83f3b3ce59")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/golang/go")
-             (commit (string-append "go" version))))
+             (url "https://github.com/aybabtme/rgbterm")
+             (commit (go-version->git-ref version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32
-         "03d86871r3n3q3wqwqg91x2jb1dsh164h2jdcg5ymxgk6qcwsbks"))))
+        (base32 "0wvmxvjn64968ikvnxrflb1x8rlcwzpfl53fzbxff2axbx9lq50q"))))
+    (build-system go-build-system)
+    (arguments '(#:import-path "github.com/aybabtme/rgbterm"))
+    (home-page "https://github.com/aybabtme/rgbterm")
+    (synopsis "RGB terminal")
+    (description
+     "Package rgbterm colorizes bytes and strings using RGB colors, for a
+full range of pretty terminal strings.
+")
+    (license license:expat)))
+
+(define-public go-github-com-go-logfmt-logfmt
+  (package
+    (name "go-github-com-go-logfmt-logfmt")
+    (version "0.5.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/go-logfmt/logfmt")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "01fs4x2aqw2qcsz18s4nfvyqv3rcwz5xmgpk3bic6nzgyzsjd7dp"))))
+    (build-system go-build-system)
+    (arguments '(#:import-path "github.com/go-logfmt/logfmt"))
+    (home-page "https://github.com/go-logfmt/logfmt")
+    (synopsis "logfmt")
+    (description
+     "Package logfmt implements utilities to marshal and unmarshal data in the
+logfmt format.  The logfmt format records key/value pairs in a way that
+balances readability for humans and simplicity of computer parsing.  It is
+most commonly used as a more human friendly alternative to JSON for
+structured logging.
+")
+    (license license:expat)))
+
+(define-public go-github-com-kr-logfmt
+  (package
+    (name "go-github-com-kr-logfmt")
+    (version "0.0.0-20210122060352-19f9bcb100e6")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/kr/logfmt")
+             (commit (go-version->git-ref version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1l6322amgy092n30l6br0wzszf3l2a3dkylck3pzpvzr4lqfcyhb"))))
+    (build-system go-build-system)
+    (arguments '(#:import-path "github.com/kr/logfmt"))
+    (home-page "https://github.com/kr/logfmt")
+    (synopsis #f)
+    (description
+     "Package implements the decoding of logfmt key-value pairs.
+")
+    (license license:expat)))
+
+(define-public humanlog
+  (package
+    (name "humanlog")
+    (version "0.4.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/aybabtme/humanlog")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0s2ni1d4qqrdybvw8w8q5m500nhs6yz2a73wihmfhlk9hq36037n"))))
+    (build-system go-build-system)
     (arguments
-     (substitute-keyword-arguments (package-arguments go-1.4)
-       ((#:system system)
-        (if (string-prefix? "aarch64-linux" (or (%current-system)
-                                                (%current-target-system)))
-          "aarch64-linux"
-          system))
-       ((#:phases phases)
-        `(modify-phases ,phases
-           (replace 'prebuild
-             (lambda* (#:key inputs outputs #:allow-other-keys)
-               (let* ((gcclib (string-append (assoc-ref inputs "gcc:lib") "/lib"))
-                      (ld (string-append (assoc-ref inputs "libc") "/lib"))
-                      (loader (car (find-files ld "^ld-linux.+")))
-                      (net-base (assoc-ref inputs "net-base"))
-                      (tzdata-path
-                       (string-append (assoc-ref inputs "tzdata") "/share/zoneinfo"))
-                      (output (assoc-ref outputs "out")))
+     '(#:unpack-path "github.com/aybabtme/humanlog/"
+       #:import-path "github.com/aybabtme/humanlog/cmd/humanlog"
+       #:install-source? #f))
+    (propagated-inputs
+     `(("go-golang-org-x-sys" ,go-golang-org-x-sys)
+       ("go-github-com-urfave-cli" ,go-github-com-urfave-cli)
+       ("go-github-com-mattn-go-isatty" ,go-github-com-mattn-go-isatty)
+       ("go-github-com-mattn-go-colorable" ,go-github-com-mattn-go-colorable)
+       ("go-github-com-kr-logfmt" ,go-github-com-kr-logfmt)
+       ("go-github-com-go-logfmt-logfmt" ,go-github-com-go-logfmt-logfmt)
+       ("go-github-com-fatih-color" ,go-github-com-fatih-color)
+       ("go-github-com-aybabtme-rgbterm" ,go-github-com-aybabtme-rgbterm)))
+    (home-page "https://github.com/aybabtme/humanlog")
+    (synopsis "humanlog")
+    (description
+     "Read logs from @code{stdin} and prints them back to @code{stdout}, but prettier.")
+    (license license:asl2.0)))
 
-                 ;; Having the patch in the 'patches' field of <origin> breaks
-                 ;; the 'TestServeContent' test due to the fact that
-                 ;; timestamps are reset.  Thus, apply it from here.
-                 (invoke "patch" "-p2" "--force" "-i"
-                         (assoc-ref inputs "go-skip-gc-test.patch"))
+(define-public go-honnef-co-go-tools
+  (package
+    (name "go-honnef-co-go-tools")
+    (version "0.2.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/dominikh/go-tools")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "11zzzxk0v3lprgkgvwjgbnmwc7wdnx9jhf55sy1l8r9kybw44gjn"))))
+    (build-system go-build-system)
+    (arguments '(#:import-path "honnef.co/go/tools/"))
+    (propagated-inputs
+     `(("go-golang-org-x-tools" ,go-golang-org-x-tools)
+       ("go-github-com-burntsushi-toml" ,go-github-com-burntsushi-toml)))
+    (home-page "https://honnef.co/go/tools/")
+    (synopsis "Documentation")
+    (description
+     "Staticcheck is a state of the art linter for the .  Using static analysis, it finds bugs and performance issues,
+offers simplifications, and enforces style rules.")
+    (license #f)))
 
-                 ;; A side effect of these test scripts is testing
-                 ;; cgo. Attempts at using cgo flags and directives with these
-                 ;; scripts as specified here (https://golang.org/cmd/cgo/)
-                 ;; have not worked. The tests continue to state that they can
-                 ;; not find object files/headers despite being present.
-                 (for-each
-                  delete-file
-                  '("cmd/go/testdata/script/mod_case_cgo.txt"
-                    "cmd/go/testdata/script/list_find.txt"
-                    "cmd/go/testdata/script/list_compiled_imports.txt"
-                    "cmd/go/testdata/script/cgo_syso_issue29253.txt"
-                    "cmd/go/testdata/script/cover_cgo.txt"
-                    "cmd/go/testdata/script/cover_cgo_xtest.txt"
-                    "cmd/go/testdata/script/cover_cgo_extra_test.txt"
-                    "cmd/go/testdata/script/cover_cgo_extra_file.txt"
-                    "cmd/go/testdata/script/ldflag.txt"
-                    "cmd/go/testdata/script/link_syso_issue33139.txt"
-                    "cmd/go/testdata/script/cgo_path_space.txt"
-                    "cmd/go/testdata/script/cgo_path.txt"))
+(define-public staticcheck
+  (package
+    (inherit go-honnef-co-go-tools)
+    (name "staticcheck")
+    (arguments '(#:unpack-path "honnef.co/go/tools"
+                 #:import-path "honnef.co/go/tools/cmd/staticcheck"))))
 
-                 (for-each make-file-writable (find-files "."))
+(define-public go-gopkg-in-tomb-v1
+  (package
+    (name "go-gopkg-in-tomb-v1")
+    (version "1.0.0-20141024135613-dd632973f1e7")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://gopkg.in/tomb.v1")
+             (commit (go-version->git-ref version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1lqmq1ag7s4b3gc3ddvr792c5xb5k6sfn0cchr3i2s7f1c231zjv"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:tests? #f
+       #:import-path "gopkg.in/tomb.v1" #:unpack-path "gopkg.in/tomb.v1"))
+    (home-page "https://gopkg.in/tomb.v1")
+    (synopsis "Installation and usage")
+    (description
+     "The tomb package offers a conventional API for clean goroutine termination.
+")
+    (license license:bsd-3)))
 
-                 (substitute* "os/os_test.go"
-                   (("/usr/bin") (getcwd))
-                   (("/bin/pwd") (which "pwd"))
-                   (("/bin/sh") (which "sh")))
+(define-public go-github-com-cpuguy83-go-md2man-v2
+  (package
+    (name "go-github-com-cpuguy83-go-md2man-v2")
+    (version "2.0.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/cpuguy83/go-md2man")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "051ljpzf1f5nh631lvn53ziclkzmx5lza8545mkk6wxdfnfdcx8f"))))
+    (build-system go-build-system)
+    (arguments '(#:import-path "github.com/cpuguy83/go-md2man/v2"))
+    (propagated-inputs
+     `(("go-github-com-russross-blackfriday-v2"
+        ,go-github-com-russross-blackfriday-v2)))
+    (home-page "https://github.com/cpuguy83/go-md2man")
+    (synopsis "go-md2man")
+    (description "Converts markdown into roff (man pages).")
+    (license license:expat)))
 
-                 ;; Add libgcc to runpath
-                 (substitute* "cmd/link/internal/ld/lib.go"
-                   (("!rpath.set") "true"))
-                 (substitute* "cmd/go/internal/work/gccgo.go"
-                   (("cgoldflags := \\[\\]string\\{\\}")
-                    (string-append "cgoldflags := []string{"
-                                   "\"-rpath=" gcclib "\""
-                                   "}"))
-                   (("\"-lgcc_s\", ")
-                    (string-append
-                     "\"-Wl,-rpath=" gcclib "\", \"-lgcc_s\", ")))
-                 (substitute* "cmd/go/internal/work/gc.go"
-                   (("ldflags = setextld\\(ldflags, compiler\\)")
-                    (string-append
-                     "ldflags = setextld(ldflags, compiler)\n"
-                     "ldflags = append(ldflags, \"-r\")\n"
-                     "ldflags = append(ldflags, \"" gcclib "\")\n")))
+(define-public go-github-com-russross-blackfriday-v2
+  (package
+    (name "go-github-com-russross-blackfriday-v2")
+    (version "2.1.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/russross/blackfriday")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0d1rg1drrfmabilqjjayklsz5d0n3hkf979sr3wsrw92bfbkivs7"))))
+    (build-system go-build-system)
+    (arguments '(#:import-path "github.com/russross/blackfriday/v2"))
+    (home-page "https://github.com/russross/blackfriday")
+    (synopsis "Blackfriday")
+    (description "Package blackfriday is a markdown processor.
+")
+    (license license:bsd-2)))
 
-                 ;; Disable failing tests: these tests attempt to access
-                 ;; commands or network resources which are neither available
-                 ;; nor necessary for the build to succeed.
-                 (for-each
-                  (match-lambda
-                    ((file regex)
-                     (substitute* file
-                       ((regex all before test_name)
-                        (string-append before "Disabled" test_name)))))
-                  '(("net/net_test.go" "(.+)(TestShutdownUnix.+)")
-                    ("net/dial_test.go" "(.+)(TestDialTimeout.+)")
-                    ("net/cgo_unix_test.go" "(.+)(TestCgoLookupPort.+)")
-                    ("net/cgo_unix_test.go" "(.+)(TestCgoLookupPortWithCancel.+)")
-                    ;; 127.0.0.1 doesn't exist
-                    ("net/cgo_unix_test.go" "(.+)(TestCgoLookupPTR.+)")
-                    ;; 127.0.0.1 doesn't exist
-                    ("net/cgo_unix_test.go" "(.+)(TestCgoLookupPTRWithCancel.+)")
-                    ;; /etc/services doesn't exist
-                    ("net/parse_test.go" "(.+)(TestReadLine.+)")
-                    ("os/os_test.go" "(.+)(TestHostname.+)")
-                    ;; The user's directory doesn't exist
-                    ("os/os_test.go" "(.+)(TestUserHomeDir.+)")
-                    ("time/format_test.go" "(.+)(TestParseInSydney.+)")
-                    ("time/format_test.go" "(.+)(TestParseInLocation.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestEcho.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestCommandRelativeName.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestCatStdin.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestCatGoodAndBadFile.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestExitStatus.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestPipes.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestStdinClose.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestIgnorePipeErrorOnSuccess.+)")
-                    ("syscall/syscall_unix_test.go" "(.+)(TestPassFD\\(.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestExtraFiles/areturn.+)")
-                    ("cmd/go/go_test.go" "(.+)(TestCoverageWithCgo.+)")
-                    ("cmd/go/go_test.go" "(.+)(TestTwoPkgConfigs.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestOutputStderrCapture.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestExtraFiles.+)")
-                    ("os/exec/exec_test.go" "(.+)(TestExtraFilesRace.+)")
-                    ("net/lookup_test.go" "(.+)(TestLookupPort.+)")
-                    ("syscall/exec_linux_test.go"
-                     "(.+)(TestCloneNEWUSERAndRemapNoRootDisableSetgroups.+)")))
+(define-public toxiproxy
+  (package
+    (name "toxiproxy")
+    (version "2.2.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/Shopify/toxiproxy")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "13bhhgvab1m1wyxng729inf036qgj91laxarjc7qga4kzvnrzsjz"))))
+    (build-system go-build-system)
+    (arguments '(#:import-path "github.com/Shopify/toxiproxy/v2"))
+    (propagated-inputs
+     `(("go-golang-org-x-sys" ,go-golang-org-x-sys)
+       ("go-github-com-shurcool-sanitized-anchor-name"
+        ,go-github-com-shurcool-sanitized-anchor-name)
+       ("go-github-com-russross-blackfriday-v2"
+        ,go-github-com-russross-blackfriday-v2)
+       ("go-github-com-cpuguy83-go-md2man-v2"
+        ,go-github-com-cpuguy83-go-md2man-v2)
+       ("go-gopkg-in-tomb-v1" ,go-gopkg-in-tomb-v1)
+       ("go-golang-org-x-term" ,go-golang-org-x-term)
+       ("go-github-com-urfave-cli-v2" ,go-github-com-urfave-cli-v2)
+       ("go-github-com-sirupsen-logrus" ,go-github-com-sirupsen-logrus)
+       ("go-github-com-gorilla-mux" ,go-github-com-gorilla-mux)))
+    (home-page "https://github.com/Shopify/toxiproxy")
+    (synopsis "Toxiproxy")
+    (description
+     "Toxiproxy is a framework for simulating network conditions.  It's made
+specifically to work in testing, CI and development environments, supporting
+deterministic tampering with connections, but with support for randomized chaos
+and customization.  We've been
+successfully using it in all development and test environments at Shopify since
+October, 2014.  See our @url{https://shopifyengineering.myshopify.com/blogs/engineering/building-and-testing-resilient-ruby-on-rails-applications,blog post} on resiliency for more information.")
+    (license license:expat)))
 
-                 ;; These tests fail on aarch64-linux
-                 (substitute* "cmd/dist/test.go"
-                   (("t.registerHostTest\\(\"testsanitizers/msan.*") ""))
-
-                 ;; fix shebang for testar script
-                 ;; note the target script is generated at build time.
-                 (substitute* "../misc/cgo/testcarchive/carchive_test.go"
-                   (("#!/usr/bin/env") (string-append "#!" (which "env"))))
-
-                 (substitute* "net/lookup_unix.go"
-                   (("/etc/protocols") (string-append net-base "/etc/protocols")))
-                 (substitute* "net/port_unix.go"
-                   (("/etc/services") (string-append net-base "/etc/services")))
-                 (substitute* "time/zoneinfo_unix.go"
-                   (("/usr/share/zoneinfo/") tzdata-path))
-                 (substitute* (find-files "cmd" "\\.go")
-                   (("/lib(64)?/ld-linux.*\\.so\\.[0-9]") loader))
-                 #t)))
-           (add-before 'build 'set-bootstrap-variables
-             (lambda* (#:key outputs inputs #:allow-other-keys)
-               ;; Tell the build system where to find the bootstrap Go.
-               (let ((go  (assoc-ref inputs "go")))
-                 (setenv "GOROOT_BOOTSTRAP" go)
-                 (setenv "GOGC" "400")
-                 #t)))
-           (replace 'build
-             (lambda* (#:key inputs outputs #:allow-other-keys)
-               ;; FIXME: Some of the .a files are not bit-reproducible.
-               (let* ((output (assoc-ref outputs "out")))
-                 (setenv "CC" (which "gcc"))
-                 (setenv "GOOS" "linux")
-                 (setenv "GOROOT" (dirname (getcwd)))
-                 (setenv "GOROOT_FINAL" output)
-                 (setenv "CGO_ENABLED" "1")
-                 (invoke "sh" "all.bash"))))
-           (replace 'install
-             ;; TODO: Most of this could be factorized with Go 1.4.
-             (lambda* (#:key outputs #:allow-other-keys)
-               (let* ((output (assoc-ref outputs "out"))
-                      (doc_out (assoc-ref outputs "doc"))
-                      (docs (string-append doc_out "/share/doc/" ,name "-" ,version))
-                      (src (string-append
-                            (assoc-ref outputs "tests") "/share/" ,name "-" ,version)))
-                 ;; Prevent installation of the build cache, which contains
-                 ;; store references to most of the tools used to build Go and
-                 ;; would unnecessarily increase the size of Go's closure if it
-                 ;; was installed.
-                 (delete-file-recursively "../pkg/obj")
-
-                 (mkdir-p src)
-                 (copy-recursively "../test" (string-append src "/test"))
-                 (delete-file-recursively "../test")
-                 (mkdir-p docs)
-                 (copy-recursively "../api" (string-append docs "/api"))
-                 (delete-file-recursively "../api")
-                 (copy-recursively "../doc" (string-append docs "/doc"))
-                 (delete-file-recursively "../doc")
-
-                 (for-each
-                  (lambda (file)
-                    (let* ((filein (string-append "../" file))
-                           (fileout (string-append docs "/" file)))
-                      (copy-file filein fileout)
-                      (delete-file filein)))
-                  ;; Note the slightly different file names compared to 1.4.
-                  '("README.md" "CONTRIBUTORS" "AUTHORS" "PATENTS"
-                    "LICENSE" "VERSION" "CONTRIBUTING.md" "robots.txt"))
-
-                 (copy-recursively "../" output)
-                 #t)))))))
-    (native-inputs
-     `(("go" ,go-1.4)
-       ("go-skip-gc-test.patch" ,(search-patch "go-skip-gc-test.patch"))
-       ,@(match (%current-system)
-           ((or "armhf-linux" "aarch64-linux")
-            `(("gold" ,binutils-gold)))
-           (_ `()))
-       ,@(package-native-inputs go-1.4)))
-    (supported-systems %supported-systems)))
+(define-public humanlog
+  (package
+    (name "humanlog")
+    (version "0.4.1")
+    (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+               (url "https://github.com/aybabtme/humanlog")
+               (commit (string-append "v" version))))
+        (file-name (git-file-name name version))
+        (sha256
+          (base32 "0s2ni1d4qqrdybvw8w8q5m500nhs6yz2a73wihmfhlk9hq36037n"))))
+    (build-system go-build-system)
+    (arguments '(#:import-path "github.com/aybabtme/humanlog"))
+    (propagated-inputs
+      `(("go-golang-org-x-sys" ,go-golang-org-x-sys)
+        ("go-github-com-urfave-cli" ,go-github-com-urfave-cli)
+        ("go-github-com-mattn-go-isatty" ,go-github-com-mattn-go-isatty)
+        ("go-github-com-mattn-go-colorable" ,go-github-com-mattn-go-colorable)
+        ("go-github-com-kr-logfmt" ,go-github-com-kr-logfmt)
+        ("go-github-com-go-logfmt-logfmt" ,go-github-com-go-logfmt-logfmt)
+        ("go-github-com-fatih-color" ,go-github-com-fatih-color)
+        ("go-github-com-aybabtme-rgbterm" ,go-github-com-aybabtme-rgbterm)))
+    (home-page "https://github.com/aybabtme/humanlog")
+    (synopsis "humanlog")
+    (description
+      "Read logs from @code{stdin} and prints them back to @code{stdout}, but prettier.")
+    (license license:asl2.0)))
