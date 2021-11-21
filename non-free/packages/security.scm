@@ -58,7 +58,7 @@ which offers a few extra capabilities on top of osquery:
 (define-public osquery
   (package
     (name "osquery")
-    (version "4.9.0")
+    (version "5.0.1")
     (source
      (origin
        (method url-fetch/tarbomb)
@@ -67,19 +67,20 @@ which offers a few extra capabilities on top of osquery:
              version "/osquery-" version "_1.linux_x86_64.tar.gz"))
        (sha256
         (base32
-         "1iaqvxgsn42s1sx9wq5pjqsw8227n1ngj2g5cpvrdki1dsvzb1s1"))))
+         "0da2676y4zjiz2k410vqngvbinz7dpwamc0pykah53rq9mqrbb5c"))))
     (build-system binary-build-system)
     (arguments
      `(#:install-plan
        '(("etc" "etc")
-         ("usr/local/" "."))
+         ("opt/osquery/" "."))
        #:patchelf-plan
-       '(("usr/local/bin/osqueryd" ("zlib" "libc")))
+       '(("opt/osquery/bin/osqueryd" ("zlib" "libc")))
        #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'chmod-to-allow-patchelf
            (lambda _
-             (chmod "usr/local/bin/osqueryd" #o755))))))
+             (chmod "opt/osquery/bin/osqueryd" #o755)
+             #t)))))
     (inputs
      `(("zlib" ,zlib)))
     (supported-systems '("x86_64-linux"))
