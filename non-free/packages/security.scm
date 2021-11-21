@@ -80,7 +80,12 @@ which offers a few extra capabilities on top of osquery:
          (add-after 'unpack 'chmod-to-allow-patchelf
            (lambda _
              (chmod "opt/osquery/bin/osqueryd" #o755)
-             #t)))))
+             #t))
+         (add-after 'install 'create-osqueryi
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let ((out (assoc-ref outputs "out")))
+               (symlink (format #f "~a/bin/osqueryd" out)
+                        (format #f "~a/bin/osqueryi" out))))))))
     (inputs
      `(("zlib" ,zlib)))
     (supported-systems '("x86_64-linux"))
