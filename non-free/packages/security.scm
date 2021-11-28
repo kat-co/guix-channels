@@ -14,13 +14,17 @@
 ;;; along with this. If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (non-free packages security)
+  #:use-module (gnu packages compression)
+  #:use-module (gnu packages debian)
+  #:use-module (gnu packages gcc)
+
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system copy)
-  #:use-module (nonguix build-system binary)
 
-  #:use-module (gnu packages compression))
+  #:use-module (nonguix build-system binary)
+  #:export (%sentinelone-agent))
 
 (define-public kolide-launcher
   (package
@@ -100,3 +104,36 @@ abstract concepts such as running processes, loaded kernel modules,
 open network connections, browser plugins, hardware events or file
 hashes.")
     (license (list license:gpl2 license:asl2.0))))
+
+(define %sentinelone-agent
+  (package
+    (name "sentinelone-agent")
+    (version "21.6.2.5")
+    (source "")
+    (build-system binary-build-system)
+    (arguments
+     `(#:install-plan
+       '(("opt/" "opt"))
+       #:patchelf-plan
+       '(("opt/sentinelone/bin/sentinelone-agent" ("libc"
+                                                   "libgccjit"))
+         ("opt/sentinelone/bin/sentinelctl" ("libgccjit")))
+       #:phases
+       (modify-phases %standard-phases
+         (replace 'unpack
+           (lambda* (#:key inputs source #:allow-other-keys)
+             (let ((dpkg (string-append (assoc-ref inputs "dpkg")
+                                      "/bin/dpkg")))
+               (invoke dpkg "-x" source ".")))))))
+    (native-inputs
+     `(("dpkg" ,dpkg)))
+    (inputs
+     `(("libgccjit" ,libgccjit)))
+    (supported-systems '("x86_64-linux"))
+    (home-page "https://www.sentinelone.com/")
+    (synopsis "SentinelOne agent")
+    (description "The SentinelOne agent derived from a .deb file. This package
+will not work alone. It is meant to be inherited from, and the source field
+overwritten with the location of the file provided to you by your
+organization.")
+    (license #f)))
