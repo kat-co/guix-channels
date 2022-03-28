@@ -59,7 +59,7 @@
   (sbcl-package->ecl-package sbcl-inotify))
 
 (define-public sbcl-pp-toml
-  (let ((commit "5a65c1855b15ddf370d140f7cd75f5a9dbae40c3")
+  (let ((commit "dc880368933f5baea1584a9a40fbd171c642a3a3")
         (revision "1"))
     (package
       (name "sbcl-pp-toml")
@@ -73,7 +73,7 @@
          (file-name (git-file-name name version))
          (sha256
           (base32
-           "1hf3j7blj25s6grc1q2ia48a9q2n0wrsy97plp4xawhrw60959pr"))))
+           "1ivr0v7skdml6i3sjvb3x7cv7ynjmvpg0f8jm9bmkng6y7bc0xaa"))))
       (build-system asdf-build-system/sbcl)
       (inputs
        `(("alexandria" ,sbcl-alexandria)
@@ -90,3 +90,6 @@
 
 (define-public cl-pp-toml
   (sbcl-package->cl-source-package sbcl-pp-toml))
+
+(define-public ecl-pp-toml
+  (sbcl-package->ecl-package sbcl-pp-toml))

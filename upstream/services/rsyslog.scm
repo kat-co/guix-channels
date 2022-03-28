@@ -72,7 +72,7 @@
 (define module-list? (list-of (block-with-name "module")))
 (define serialize-module-list serialize-list-of-rsyslog-block)
 
-(define-public (make-rsyslog-input name input-args)
+(define-public (make-rsyslog-input input-args)
   (rsyslog-block (name "input") (input-args input-args)))
 
 (define input-list? (list-of (block-with-name "input")))
@@ -90,10 +90,12 @@
   (rsyslog-block (name "action") (input-args (cons `(type . ,type) args))))
 
 (define extra-lines? list?)
-
 (define (serialize-extra-lines _ lines)
   (format #t "~a" (string-join lines "\n")))
 
+
+
+;; Defining the configuration of the rsyslogd shepherd service.
 (define-configuration rsyslog-configuration
   (package
     (package rsyslog)
@@ -119,13 +121,6 @@
      (lambda ()
        (serialize-configuration config rsyslog-configuration-fields)))))
 
-;; (define (add-msmtp-configuration config)
-;;   (let ((cfg (home-msmtp-configuration-config config)))
-;;     `(("config/msmtp/config"
-;;        ,(mixed-text-file
-;;          "config"
-;;          (serialize-isync-config #f cfg))))))
-
 (define (add-rsyslog-configuration config)
   `(("config/rsyslogd/config" ,(rsyslog-configuration-file config))))
 
@@ -143,7 +138,7 @@
                       (list #$(file-append package "/sbin/rsyslogd")
                             "-n" "-iNONE"
                             "-f" #$(rsyslog-configuration-file config))
-                      #:log-file "/volume7/log/shepherd/rsyslog.log"))
+                      #:log-file "/var/log/rsylogd.log"))
             (stop #~(make-kill-destructor)))))))
 
 (define rsyslog-service-type
