@@ -1,4 +1,4 @@
-;;; Copyright © 2020 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2022 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@
   #:use-module (gnu packages cyrus-sasl)
   #:use-module (gnu packages geo)
   #:use-module (gnu packages tcl)
-  #:use-module (upstream packages c)
   #:use-module ((upstream packages networking) #:prefix upstream:))
 
 (define-public rsyslog
