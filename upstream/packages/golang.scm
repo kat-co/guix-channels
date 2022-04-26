@@ -1,4 +1,4 @@
-;;; Copyright © 2019, 2021 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2019, 2021, 2022 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -294,3 +294,19 @@ October, 2014.  See our @url{https://shopifyengineering.myshopify.com/blogs/engi
     (description
       "Read logs from @code{stdin} and prints them back to @code{stdout}, but prettier.")
     (license license:asl2.0)))
+
+(define-public go-1.18
+  (package
+    (inherit go-1.17)
+    (name "go")
+    (version "1.18.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/golang/go")
+             (commit (string-append "go" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "1ywx90w1jvmp6nif00kjn4ksn09a0wvfp2kww3gxk02s1wi23zw5"))))))
