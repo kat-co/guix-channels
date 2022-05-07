@@ -23,7 +23,6 @@
   #:use-module (gnu packages lisp-xyz)
   #:use-module (gnu packages lisp-check)
 
-  #:use-module (upstream packages databases)
   #:use-module (upstream packages networking))
 
 (define-public sbcl-inotify
