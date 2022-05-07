@@ -1,4 +1,4 @@
-;;; Copyright © 2021 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2021, 2022 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@
   #:export (s1-configuration
             sentinelone-service-type))
 
-(define %s1-root-path "/var/run/sentinelone/")
+(define %s1-root-path "/opt/sentinelone/")
 (define %s1-log-path "/var/log/sentinelone/")
 (define %s1-etc-path "sentinelone/")
 (define %s1-installation-params-path "installation_params.json")
@@ -110,12 +110,9 @@ to user's machines.")
                 #~(make-forkexec-constructor/container
                    (list #$(file-append sentinelone
                                         "/opt/sentinelone/bin/sentinelone-agent"))
-                   #:pid-file #$(string-append %s1-root-path "/agent.pid")
                    #:mappings #$exposed-paths)
                 #~(make-forkexec-constructor
-                   (list #$(file-append sentinelone
-                                        "/opt/sentinelone/bin/sentinelone-agent"))
-                   #:pid-file #$(string-append %s1-root-path "/agent.pid"))))
+                   (list (string-append %s1-root-path "bin/sentinelone-agent")))))
            (stop #~(make-kill-destructor))
            (respawn? #f)))))
 
@@ -139,26 +136,43 @@ to user's machines.")
         (use-modules (guix build utils))
         (let ((user (getpwnam "sentinelone"))
               ;; This list came from the `dirs` file of the .deb installer.
-              (agent-paths (map (lambda (f) (string-append #$%s1-root-path f))
-                                (list "."
-                                      ".storage"
-                                      "assets"
-                                      "cgroups/memory"
-                                      "configuration"
-                                      "crash_dumps/.current"
-                                      "model"
-                                      "rso"
-                                      "uploads"
-                                      "auto_uploads"
-                                      "mount"
-                                      "tmp"))))
+              (writeable-paths (map (lambda (f) (string-append #$%s1-root-path f))
+                                    (list "." ; main s1 folder
+                                          "agent_modules"
+                                          "assets"
+                                          "auto_uploads"
+                                          "cgroups"
+                                          "comm_sdk"
+                                          "configuration"
+                                          "crash_drumps"
+                                          "model"
+                                          "mount"
+                                          "rso"
+                                          ".storage"
+                                          "tmp"
+                                          "uploads"))))
           ;; Create all the paths the agent expects and the root directory for
           ;; logs.
           (for-each
            (lambda (f)
              (mkdir-p f)
              (chown f (passwd:uid user) (passwd:gid user)))
-           (cons #$%s1-log-path agent-paths)))
+           (cons #$%s1-log-path writeable-paths)))
+        ;; Copy binaries over so that they're running in an expected place. Yes,
+        ;; this is terrible.
+        (let ((bin #$(string-append %s1-root-path "bin")))
+          (unless (stat bin #f)
+            (mkdir #$(string-append %s1-root-path "bin"))))
+        (for-each
+         (lambda (f)
+           (copy-file (car f) (cdr f)))
+         (list
+          (cons #$(file-append sentinelone "/opt/sentinelone/bin/sentinelone-agent")
+                #$(string-append %s1-root-path "bin/sentinelone-agent"))
+          (cons #$(file-append sentinelone "/opt/sentinelone/bin/sentinelctl")
+                #$(string-append %s1-root-path "bin/sentinelctl"))
+          (cons #$(file-append sentinelone "/opt/sentinelone/bin/sentinelone-watchdog")
+                #$(string-append %s1-root-path "bin/sentinelone-watchdog"))))
         ;; Even if a namespace is handling the filesystem layout, symlink so we
         ;; can run activation commands.
         (for-each
@@ -167,12 +181,22 @@ to user's machines.")
              (unless (and (stat dest #f) (symbolic-link? dest))
                ;; When redeploying, don't try and link these again.
                (symlink (car f) (cdr f)))))
-         (list (cons #$%s1-root-path "/opt/sentinelone")
-               (cons #$(file-append sentinelone "/opt/sentinelone/bin")
-                     #$(string-append %s1-root-path "bin"))
-               (cons #$%s1-log-path #$(string-append %s1-root-path "/log"))
-               (cons #$(string-append "/etc/" %s1-etc-path %s1-installation-params-path)
-                     #$(string-append %s1-root-path "configuration/" %s1-installation-params-path))))
+         (list
+          (cons #$%s1-log-path #$(string-append %s1-root-path "/log"))
+          (cons #$(string-append "/etc/" %s1-etc-path %s1-installation-params-path)
+                #$(string-append %s1-root-path "configuration/" %s1-installation-params-path))
+          (cons #$(file-append sentinelone "/opt/sentinelone/detectors.pkg")
+                #$(string-append %s1-root-path "detectors.pkg"))
+          (cons #$(file-append sentinelone "/opt/sentinelone/benchmarks")
+                #$(string-append %s1-root-path "benchmarks"))
+          (cons #$(file-append sentinelone "/opt/sentinelone/ebpfs")
+                #$(string-append %s1-root-path "ebpfs"))
+          (cons #$(file-append sentinelone "/opt/sentinelone/filetypes_artifacts")
+                #$(string-append %s1-root-path "filetypes_artifacts"))
+          (cons #$(file-append sentinelone "/opt/sentinelone/home")
+                #$(string-append %s1-root-path "home"))
+          (cons #$(file-append sentinelone "/opt/sentinelone/lib")
+                #$(string-append %s1-root-path "lib"))))
         ;; Generate the `basic.conf` file
         (unless (stat #$(string-append %s1-root-path "configuration/basic.conf")
                       #f)
