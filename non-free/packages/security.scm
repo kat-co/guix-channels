@@ -29,7 +29,7 @@
 (define-public kolide-launcher
   (package
     (name "kolide-launcher")
-    (version "0.11.22")
+    (version "0.11.25")
     (source
      (origin
        (method url-fetch)
@@ -38,7 +38,7 @@
              "v" version "/linux.amd64_v" version ".zip"))
        (sha256
         (base32
-         "1hlh5miblyxgc8n9b3jrl05cv8j66ch9a3qjrxylgazzw1s88jf6"))))
+         "0lppp3pc6i0kdnx2zii0v89c6p2b4kindk98g5qyzgclfpwb905w"))))
     (build-system copy-build-system)
     (arguments
      `(#:install-plan
