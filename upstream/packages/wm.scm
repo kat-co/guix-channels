@@ -19,14 +19,14 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix utils)
+  #:use-module (guix build utils)
 
   #:use-module ((gnu packages wm) #:prefix upstream:))
 
 (define-public stumpwm
   (let ((commit "0cc4d4f56bdb31f52e9e3b493e9839a23b55204a")
-        (revision "0"))
-    (package
-      (inherit upstream:stumpwm)
+        (revision "1"))
+    (package/inherit upstream:stumpwm
       (name "stumpwm")
       (version (git-version "20.11" revision commit))
       (source
@@ -42,4 +42,4 @@
       (arguments
        (substitute-keyword-arguments (package-arguments upstream:stumpwm)
          ;; TODO: Why are tests failing?
-         ((#:tests? #f)))))))
+         ((#:tests? _ #f) #f))))))
