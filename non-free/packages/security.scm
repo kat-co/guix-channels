@@ -62,7 +62,7 @@ which offers a few extra capabilities on top of osquery:
 (define-public osquery
   (package
     (name "osquery")
-    (version "5.0.1")
+    (version "5.2.3")
     (source
      (origin
        (method url-fetch/tarbomb)
@@ -71,7 +71,7 @@ which offers a few extra capabilities on top of osquery:
              version "/osquery-" version "_1.linux_x86_64.tar.gz"))
        (sha256
         (base32
-         "0da2676y4zjiz2k410vqngvbinz7dpwamc0pykah53rq9mqrbb5c"))))
+         "1x2k93zh04ykhvh3r4vzz90cjxv7p6paw8bpqd63mfdg9gr6axb7"))))
     (build-system binary-build-system)
     (arguments
      `(#:install-plan
