@@ -112,7 +112,7 @@ to user's machines.")
                                         "/opt/sentinelone/bin/sentinelone-agent"))
                    #:mappings #$exposed-paths)
                 #~(make-forkexec-constructor
-                   (list (string-append %s1-root-path "bin/sentinelone-agent")))))
+                   (list #$(string-append %s1-root-path "bin/sentinelone-agent")))))
            (stop #~(make-kill-destructor))
            (respawn? #f)))))
 
