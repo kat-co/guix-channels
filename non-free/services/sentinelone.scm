@@ -42,6 +42,8 @@
 (define %s1-etc-path "sentinelone/")
 (define %s1-installation-params-path "installation_params.json")
 
+(define (serialize-list name list) "")
+
 (define list-of-paths? (list-of string?))
 (define (serialize-list-of-paths name paths)
   (specification->file-system-mapping paths #f))
@@ -68,6 +70,9 @@ to user's machines.")
   (log-path
    (string %s1-log-path)
    "The path to send logs to")
+  (resource-limits
+   (list '())
+   "The alist of resource limits to pass to Shepherd's make-forkexec functions.")
   ;;; Standard configuration
   (management-token
    (string "")
@@ -96,7 +101,8 @@ to user's machines.")
 (define (s1-shepherd-service config)
   (let ((exposed-paths (s1-container-mappings config))
         (containerize? (s1-configuration-containerize? config))
-        (sentinelone (s1-configuration-sentinelone config)))
+        (sentinelone (s1-configuration-sentinelone config))
+        (limits (s1-configuration-resource-limits config)))
 
     (list (shepherd-service
            (documentation "Runs SentinelOne's agent.")
@@ -110,9 +116,13 @@ to user's machines.")
                 #~(make-forkexec-constructor/container
                    (list #$(file-append sentinelone
                                         "/opt/sentinelone/bin/sentinelone-agent"))
-                   #:mappings #$exposed-paths)
+                   #:mappings #$exposed-paths
+                   #:create-session? #t
+                   #:resource-limits '#$limits)
                 #~(make-forkexec-constructor
-                   (list #$(string-append %s1-root-path "bin/sentinelone-agent")))))
+                   (list #$(string-append %s1-root-path "bin/sentinelone-agent"))
+                   #:create-session? #t
+                   #:resource-limits '#$limits)))
            (stop #~(make-kill-destructor))
            (respawn? #f)))))
 
@@ -121,8 +131,6 @@ to user's machines.")
         (user-account
          (name "sentinelone")
          (group "sentinelone")
-         ;; (supplementary-groups
-         ;;  '("root"))
          (system? #t)
          (comment "SentinelOne agent user")
          (home-directory "/var/empty")
@@ -144,7 +152,7 @@ to user's machines.")
                                           "cgroups"
                                           "comm_sdk"
                                           "configuration"
-                                          "crash_drumps"
+                                          "crash_dumps"
                                           "model"
                                           "mount"
                                           "rso"
