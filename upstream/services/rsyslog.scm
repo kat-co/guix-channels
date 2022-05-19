@@ -145,7 +145,8 @@
   (service-type
    (name 'rsyslog)
    (extensions
-    (list (service-extension shepherd-root-service-type rsyslog-shepherd-service)))))
+    (list (service-extension shepherd-root-service-type rsyslog-shepherd-service)))
+   (description "Configures and runs a rsyslog daemon.")))
 
 (define home-rsyslog-service-type
   (service-type
