@@ -265,3 +265,24 @@ events and invoke a callback when these events occur. The idea is to delay the
 handling of events so that they may be dispatched in priority order when it is
 safe for callbacks to execute.")
    (license license:perl-license)))
+
+(define-public perl-yaml-syck
+  (package
+   (name "perl-yaml-syck")
+   (version "1.34")
+   (source (origin
+            (method url-fetch)
+            (uri (string-append
+                  "mirror://cpan/authors/id/T/TO/TODDR/YAML-Syck-" version
+                  ".tar.gz"))
+            (sha256
+             (base32
+              "0na1wg3d7ykzy5i44w6i1s37ymq6x0cvcc9gzvmri9xxmv65d4fc"))))
+   (build-system perl-build-system)
+   (home-page "https://metacpan.org/release/YAML-Syck")
+   (synopsis "Fast, lightweight YAML loader and dumper")
+   (description
+    "This module provides a Perl interface to the libsyck data serialization
+library. It exports the Dump and Load functions for converting Perl data
+structures to YAML strings, and the other way around.")
+   (license license:x11)))
