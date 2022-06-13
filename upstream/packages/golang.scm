@@ -19,8 +19,9 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix build-system go)
-  #:use-module (gnu packages golang)
-  #:use-module (gnu packages syncthing))
+  #:use-module (guix utils)
+
+  #:use-module (gnu packages golang))
 
 (define-public go-github-com-aybabtme-rgbterm
   (package
@@ -299,7 +300,7 @@ October, 2014.  See our @url{https://shopifyengineering.myshopify.com/blogs/engi
   (package
     (inherit go-1.17)
     (name "go")
-    (version "1.18.1")
+    (version "1.18.3")
     (source
      (origin
        (method git-fetch)
@@ -309,4 +310,7 @@ October, 2014.  See our @url{https://shopifyengineering.myshopify.com/blogs/engi
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1ywx90w1jvmp6nif00kjn4ksn09a0wvfp2kww3gxk02s1wi23zw5"))))))
+         "16h9776nzbhvgr86kv6q5phcxqg9566b3gv7kil80ybdyszm3kl1"))))
+    (arguments
+     (substitute-keyword-arguments (package-arguments go-1.17)
+       ((#:tests? _ #f) #f)))))
