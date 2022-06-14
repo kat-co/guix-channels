@@ -286,3 +286,22 @@ safe for callbacks to execute.")
 library. It exports the Dump and Load functions for converting Perl data
 structures to YAML strings, and the other way around.")
    (license license:x11)))
+
+(define-public perl-net-ip
+  (package
+   (name "perl-net-ip")
+   (version "1.26")
+   (source (origin
+            (method url-fetch)
+            (uri (string-append "mirror://cpan/authors/id/M/MA/MANU/Net-IP-"
+                                version ".tar.gz"))
+            (sha256
+             (base32
+              "0ffn2xqqbkfi7v303sp5dwgbv36jah3vg8r4nxhxfiv60vric3q4"))))
+   (build-system perl-build-system)
+   (home-page "https://metacpan.org/release/Net-IP")
+   (synopsis "Perl extension for manipulating IPv4/IPv6 addresses")
+   (description
+    "This is the Net::IP module, designed to allow easy manipulation of IPv4 and
+IPv6 addresses.")
+   (license license:perl-license)))
