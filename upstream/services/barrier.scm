@@ -68,7 +68,7 @@
    "The barrier package to use.")
   (user
    (string "root")
-   "The user to run the service as"
+   "The user to run the service as."
    empty-serializer)
   (xauthority
    (string "~/.Xauthority")
@@ -81,9 +81,10 @@
    (integer 24800)
    "The address to listen on"
    empty-serializer)
-  (enable-drag-drop
+  (disable-client-cert-checking
    maybe-boolean
-   "Whether drag and drop is enabled between hosts.")
+   "Whether or not client certificate checking should be disabled."
+   empty-serializer)
   (disable-crypto
    maybe-boolean
    "Whether SSL should be used to encrypt traffic between hosts.")
@@ -130,25 +131,27 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
   (let ((cli-args (barriers-cli-arguments config))
         (xauthority (barriers-configuration-xauthority config))
         (user (barriers-configuration-user config))
-        (port-number (barriers-configuration-port-number config)))
+        (port-number (barriers-configuration-port-number config))
+        (disable-client-cert-checking
+         (barriers-configuration-disable-client-cert-checking config)))
     (list (shepherd-service
            (documentation "Runs barrier server.")
            (provision '(barriers))
            (requirement '(user-processes networking))
-           (start #~(make-inetd-constructor
+           (start #~(make-forkexec-constructor
                      (list #$(file-append barrier "/bin/barriers")
                            "--no-tray"
                            "--no-daemon"
                            "--disable-client-cert-checking"
                            "--address" #$(format #f ":~a" port-number)
                            "--config" #$(barriers-configuration-file config)
-                           #$@cli-args)
-                     #$(make-socket-address AF_INET INADDR_ANY port-number)
-                     #:max-connections 1
+                           #$@cli-args
+                           #$(when disable-client-cert-checking
+                               "--disable-client-cert-checking"))
+                     #:log-file "/var/log/barriers"
                      #:user #$user
-                     #:environment-variables (list #$(format #f "XAUTHORITY=~a" xauthority))
-                     #:log-file "/var/log/barrier"))
-           (stop #~(make-inetd-destructor))))))
+                     #:environment-variables (list #$(format #f "XAUTHORITY=~a" xauthority))))
+           (stop #~(make-kill-destructor))))))
 
 (define barriers-service-type
   (service-type
@@ -164,12 +167,22 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
   (barrier
    (package barrier)
    "The barrier package to use.")
+  (user
+   (string "root")
+   "The user to run the service as."
+   empty-serializer)
+  (xauthority
+   (string "~/.Xauthority")
+   "The location of the Xauthority file."
+   empty-serializer)
   (name
    maybe-string
    "The name of the screen clients will reference.")
-  (enable-drag-drop
-   maybe-boolean
-   "Whether drag and drop is enabled between hosts.")
+  (server-address
+   maybe-string
+   "The server to connect to."
+   ;; So that it doesn't get lumped in with CLI flags
+   empty-serializer)
   (disable-crypto
    maybe-boolean
    "Whether SSL should be used to encrypt traffic between hosts.")
@@ -201,16 +214,27 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
   (cli-arguments barrierc-configuration-fields identity config))
 
 (define (barrierc-shepherd-service config)
-  (let ((cli-args (barrierc-cli-arguments config)))
+  (let ((cli-args (barrierc-cli-arguments config))
+        (xauthority (barrierc-configuration-xauthority config))
+        (user (barrierc-configuration-user config))
+        (server-address (barrierc-configuration-server-address config)))
     (list (shepherd-service
            (documentation "Runs the barrier client.")
            (provision '(barrierc))
            (requirement '(user-processes networking))
            (start #~(make-forkexec-constructor
                      (list #$(file-append barrier "/bin/barrierc")
+                           "--no-daemon"
                            "--no-tray"
-                           #$@cli-args)
-                     #:log-file "/var/log/barrier"))))))
+                           ;; Allow shepherd to handle restarts
+                           "--no-restart"
+                           #$@cli-args
+                           #$(unless (string-null? server-address)
+                               server-address))
+                     #:log-file "/var/log/barrierc"
+                     #:user #$user
+                     #:environment-variables (list #$(format #f "XAUTHORITY=~a" xauthority))))
+           (stop #~(make-kill-destructor))))))
 
 (define barrierc-service-type
   (service-type
