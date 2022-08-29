@@ -1,4 +1,4 @@
-;;; Copyright © 2020, 2021 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2021, 2022 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -18,10 +18,18 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix git-download)
   #:use-module (guix build-system asdf)
+  #:use-module (guix build-system gnu)
 
+  #:use-module (gnu packages admin)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages lisp)
   #:use-module (gnu packages lisp-xyz)
   #:use-module (gnu packages lisp-check)
+  #:use-module (gnu packages maths)
+  #:use-module (gnu packages perl)
+  #:use-module (gnu packages python)
+  #:use-module (gnu packages ruby)
+  #:use-module (gnu packages shells)
 
   #:use-module (upstream packages networking))
 
@@ -92,3 +100,83 @@
 
 (define-public ecl-pp-toml
   (sbcl-package->ecl-package sbcl-pp-toml))
+
+(define-public acl2
+  (package
+    (name "acl2")
+    (version "8.5")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/acl2-devel/acl2-devel")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "12cv5ms1j3vfrq066km020nwxb6x2dzh12g8nz6xxyxysn44wzzi"))))
+    (build-system gnu-build-system)
+    (arguments
+     '(#:phases
+       (modify-phases %standard-phases
+         (delete 'configure)
+         ;; ACL2 expects to be built in the place it will eventually be
+         ;; installed to. E.g., It will use those paths to find books.
+         (add-before 'build 'copy-to-install-location
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (share (string-append out "/share")))
+               (mkdir-p share)
+               (copy-recursively (getcwd) share))))
+         (replace 'build
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let ((share (string-append (assoc-ref outputs "out") "/share/")))
+               (chdir share)
+               ;; Book verification passes $HOME into truename
+               (setenv "HOME" (getcwd))
+               (invoke "make" (format #f "-j~a" (parallel-job-count))
+                       "all"
+                       "LISP=sbcl" "ACL2_MAKE_LOG=NONE")
+               (patch-shebang (string-append share "saved_acl2"))
+               ;; Certify books
+               (invoke "make" (format #f "-j~a" (parallel-job-count))
+                       ;; Don't discard all books because some don't certify
+                       "--ignore-errors"
+                       "regression-everything"
+                       "LISP=sbcl" "ACL2_MAKE_LOG=NONE"))))
+         (replace 'install
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (bin (string-append out "/bin/"))
+                    (share (string-append out "/share/")))
+               ;; Delete files to save space
+               (for-each
+                delete-file
+                (find-files
+                 share
+                 (lambda (path stat)
+                   (string-prefix? path "@useless-runes.lsp"))))
+               (mkdir-p bin)
+               ;; Symlink things into bin
+               (for-each
+                (lambda (paths)
+                  (symlink (string-append share (car paths))
+                           (string-append bin (cdr paths))))
+                '(("saved_acl2" . "acl2")
+                  ("books/build/cert.pl" . "acl2-cert")
+                  ("books/build/clean.pl" . "acl2-clean")))))))
+       #:test-target "mini-proveall"))
+    (native-inputs (list inetutils minisat perl python ruby sbcl tcsh which z3))
+    (home-page "http://www.cs.utexas.edu/users/moore/acl2")
+    (synopsis "A logic and programming language for modeling computer systems")
+    (description
+     "ACL2 is a logic and programming language in which you can model computer
+systems, together with a tool to help you prove properties of those models.
+\"ACL2\" denotes \"A Computational Logic for Applicative Common Lisp\". ACL2 is
+part of the Boyer-Moore family of provers, for which its authors have received
+the 2005 ACM Software System Award.")
+    (license '(license:bsd-3
+               license:gpl2
+               license:lgpl2.1
+               license:cc0
+               license:public-domain))))
