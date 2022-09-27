@@ -19,6 +19,7 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix build-system go)
+  #:use-module (guix build utils)
   #:use-module (guix utils)
 
   #:use-module (gnu packages golang))
@@ -296,21 +297,32 @@ October, 2014.  See our @url{https://shopifyengineering.myshopify.com/blogs/engi
       "Read logs from @code{stdin} and prints them back to @code{stdout}, but prettier.")
     (license license:asl2.0)))
 
-(define-public go-1.18
+(define-public go-1.19
   (package
-    (inherit go-1.17)
-    (name "go")
-    (version "1.18.3")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/golang/go")
-             (commit (string-append "go" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "16h9776nzbhvgr86kv6q5phcxqg9566b3gv7kil80ybdyszm3kl1"))))
-    (arguments
-     (substitute-keyword-arguments (package-arguments go-1.17)
-       ((#:tests? _ #f) #f)))))
+   (inherit go-1.17)
+   (name "go")
+   (version "1.19.1")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+           (url "https://github.com/golang/go")
+           (commit (string-append "go" version))))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32
+       "1gah4zhbkgbwrrryfmzdv2qwi1rgxk10q2r3hnlcb1dybf9c1i1w"))))
+   (arguments
+    (substitute-keyword-arguments
+     (package-arguments go-1.17)
+     ((#:tests? _ #f) #f)
+     ((#:phases child-phases '%standard-phases)
+      `(modify-phases ,child-phases
+        (replace 'install-doc-files
+          (lambda* (#:key outputs #:allow-other-keys)
+            (let ((out (assoc-ref outputs "out")))
+              (for-each
+               (lambda (file)
+                 (install-file file (string-append out "/share/doc/go")))
+               '("CONTRIBUTING.md" "LICENSE" "PATENTS" "README.md"
+                 "SECURITY.md")))))))))))
