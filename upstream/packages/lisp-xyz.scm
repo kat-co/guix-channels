@@ -175,8 +175,8 @@ systems, together with a tool to help you prove properties of those models.
 \"ACL2\" denotes \"A Computational Logic for Applicative Common Lisp\". ACL2 is
 part of the Boyer-Moore family of provers, for which its authors have received
 the 2005 ACM Software System Award.")
-    (license '(license:bsd-3
-               license:gpl2
-               license:lgpl2.1
-               license:cc0
-               license:public-domain))))
+    (license (list license:bsd-3
+                   license:gpl2
+                   license:lgpl2.1
+                   license:cc0
+                   license:public-domain))))
