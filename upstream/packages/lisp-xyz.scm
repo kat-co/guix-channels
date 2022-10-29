@@ -101,6 +101,44 @@
 (define-public ecl-pp-toml
   (sbcl-package->ecl-package sbcl-pp-toml))
 
+(define-public sbcl-snooze
+  (let ((commit "a84d44efce5d9f8b0e3916ea137dc3d43a561944")
+        (revision "1"))
+    (package
+     (name "sbcl-snooze")
+     (version (git-version "1.0.0" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/joaotavora/snooze")
+             (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "0y6n5k6yw6183kf00m4wa9fksad9qjy4i5qr027ys48mgw8d23fj"))))
+     (build-system asdf-build-system/sbcl)
+     (inputs
+      (list sbcl-alexandria
+            sbcl-cl-ppcre
+            sbcl-closer-mop
+            sbcl-quri
+            sbcl-parse-float
+            sbcl-rfc2388))
+     (native-inputs
+      (list sbcl-fiasco))
+     (home-page "https://github.com/joaotavora/snooze")
+     (synopsis "A framework for building REST services using CLOS.")
+     (description
+      "Snooze is an URL router for Common Lisp designed around REST web services.")
+     (license license:llgpl))))
+
+(define-public cl-snooze
+  (sbcl-package->cl-source-package sbcl-snooze))
+
+(define-public ecl-snooze
+  (sbcl-package->ecl-package sbcl-snooze))
+
 (define-public acl2
   (package
     (name "acl2")
