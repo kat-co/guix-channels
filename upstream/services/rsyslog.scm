@@ -128,18 +128,17 @@
   (compose list rsyslog-configuration-package))
 
 (define (rsyslog-shepherd-service config)
-  (match config
-    (($ <rsyslog-configuration> _ package modules inputs rulesets extra)
-
-     (list (shepherd-service
-            (documentation "rsyslog")
-            (provision '(rsyslog))
-            (start #~(make-forkexec-constructor
-                      (list #$(file-append package "/sbin/rsyslogd")
-                            "-n" "-iNONE"
-                            "-f" #$(rsyslog-configuration-file config))
-                      #:log-file "/var/log/rsylogd.log"))
-            (stop #~(make-kill-destructor)))))))
+  (match-record config <rsyslog-configuration>
+    (package modules inputs rulesets extra)
+    (list (shepherd-service
+           (documentation "rsyslog")
+           (provision '(rsyslog))
+           (start #~(make-forkexec-constructor
+                     (list #$(file-append package "/sbin/rsyslogd")
+                           "-n" "-iNONE"
+                           "-f" #$(rsyslog-configuration-file config))
+                     #:log-file "/var/log/rsylogd.log"))
+           (stop #~(make-kill-destructor))))))
 
 (define rsyslog-service-type
   (service-type
