@@ -94,9 +94,7 @@ structured logging.
     (arguments '(#:import-path "github.com/kr/logfmt"))
     (home-page "https://github.com/kr/logfmt")
     (synopsis #f)
-    (description
-     "Package implements the decoding of logfmt key-value pairs.
-")
+    (description "Package implements the decoding of logfmt key-value pairs.")
     (license license:expat)))
 
 (define-public humanlog
@@ -118,18 +116,20 @@ structured logging.
        #:import-path "github.com/aybabtme/humanlog/cmd/humanlog"
        #:install-source? #f))
     (propagated-inputs
-     `(("go-golang-org-x-sys" ,go-golang-org-x-sys)
-       ("go-github-com-urfave-cli" ,go-github-com-urfave-cli)
-       ("go-github-com-mattn-go-isatty" ,go-github-com-mattn-go-isatty)
-       ("go-github-com-mattn-go-colorable" ,go-github-com-mattn-go-colorable)
-       ("go-github-com-kr-logfmt" ,go-github-com-kr-logfmt)
-       ("go-github-com-go-logfmt-logfmt" ,go-github-com-go-logfmt-logfmt)
-       ("go-github-com-fatih-color" ,go-github-com-fatih-color)
-       ("go-github-com-aybabtme-rgbterm" ,go-github-com-aybabtme-rgbterm)))
+     (list
+      go-golang-org-x-sys
+      go-github-com-urfave-cli
+      go-github-com-mattn-go-isatty
+      go-github-com-mattn-go-colorable
+      go-github-com-kr-logfmt
+      go-github-com-go-logfmt-logfmt
+      go-github-com-fatih-color
+      go-github-com-aybabtme-rgbterm))
     (home-page "https://github.com/aybabtme/humanlog")
     (synopsis "humanlog")
     (description
-     "Read logs from @code{stdin} and prints them back to @code{stdout}, but prettier.")
+     "Read logs from @code{stdin} and prints them back to @code{stdout}, but
+prettier.")
     (license license:asl2.0)))
 
 (define-public go-github-com-yuin-goldmark
@@ -276,7 +276,8 @@ simplifications, and enforces style rules.")
     (build-system go-build-system)
     (arguments
      '(#:tests? #f
-       #:import-path "gopkg.in/tomb.v1" #:unpack-path "gopkg.in/tomb.v1"))
+       #:import-path "gopkg.in/tomb.v1"
+       #:unpack-path "gopkg.in/tomb.v1"))
     (home-page "https://gopkg.in/tomb.v1")
     (synopsis "Installation and usage")
     (description
@@ -300,8 +301,8 @@ simplifications, and enforces style rules.")
     (build-system go-build-system)
     (arguments '(#:import-path "github.com/cpuguy83/go-md2man/v2"))
     (propagated-inputs
-     `(("go-github-com-russross-blackfriday-v2"
-        ,go-github-com-russross-blackfriday-v2)))
+     (list
+      go-github-com-russross-blackfriday-v2))
     (home-page "https://github.com/cpuguy83/go-md2man")
     (synopsis "go-md2man")
     (description "Converts markdown into roff (man pages).")
@@ -344,18 +345,16 @@ simplifications, and enforces style rules.")
     (build-system go-build-system)
     (arguments '(#:import-path "github.com/Shopify/toxiproxy/v2"))
     (propagated-inputs
-     `(("go-golang-org-x-sys" ,go-golang-org-x-sys)
-       ("go-github-com-shurcool-sanitized-anchor-name"
-        ,go-github-com-shurcool-sanitized-anchor-name)
-       ("go-github-com-russross-blackfriday-v2"
-        ,go-github-com-russross-blackfriday-v2)
-       ("go-github-com-cpuguy83-go-md2man-v2"
-        ,go-github-com-cpuguy83-go-md2man-v2)
-       ("go-gopkg-in-tomb-v1" ,go-gopkg-in-tomb-v1)
-       ("go-golang-org-x-term" ,go-golang-org-x-term)
-       ("go-github-com-urfave-cli-v2" ,go-github-com-urfave-cli-v2)
-       ("go-github-com-sirupsen-logrus" ,go-github-com-sirupsen-logrus)
-       ("go-github-com-gorilla-mux" ,go-github-com-gorilla-mux)))
+     (list
+      go-golang-org-x-sys
+      go-github-com-shurcool-sanitized-anchor-name
+      go-github-com-russross-blackfriday-v2
+      go-github-com-cpuguy83-go-md2man-v2
+      go-gopkg-in-tomb-v1
+      go-golang-org-x-term
+      go-github-com-urfave-cli-v2
+      go-github-com-sirupsen-logrus
+      go-github-com-gorilla-mux))
     (home-page "https://github.com/Shopify/toxiproxy")
     (synopsis "Toxiproxy")
     (description
@@ -372,29 +371,30 @@ October, 2014.  See our @url{https://shopifyengineering.myshopify.com/blogs/engi
     (name "humanlog")
     (version "0.4.1")
     (source
-      (origin
-        (method git-fetch)
-        (uri (git-reference
-               (url "https://github.com/aybabtme/humanlog")
-               (commit (string-append "v" version))))
-        (file-name (git-file-name name version))
-        (sha256
-          (base32 "0s2ni1d4qqrdybvw8w8q5m500nhs6yz2a73wihmfhlk9hq36037n"))))
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/aybabtme/humanlog")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0s2ni1d4qqrdybvw8w8q5m500nhs6yz2a73wihmfhlk9hq36037n"))))
     (build-system go-build-system)
     (arguments '(#:import-path "github.com/aybabtme/humanlog"))
     (propagated-inputs
-      `(("go-golang-org-x-sys" ,go-golang-org-x-sys)
-        ("go-github-com-urfave-cli" ,go-github-com-urfave-cli)
-        ("go-github-com-mattn-go-isatty" ,go-github-com-mattn-go-isatty)
-        ("go-github-com-mattn-go-colorable" ,go-github-com-mattn-go-colorable)
-        ("go-github-com-kr-logfmt" ,go-github-com-kr-logfmt)
-        ("go-github-com-go-logfmt-logfmt" ,go-github-com-go-logfmt-logfmt)
-        ("go-github-com-fatih-color" ,go-github-com-fatih-color)
-        ("go-github-com-aybabtme-rgbterm" ,go-github-com-aybabtme-rgbterm)))
+     (list
+      go-golang-org-x-sys
+      go-github-com-urfave-cli
+      go-github-com-mattn-go-isatty
+      go-github-com-mattn-go-colorable
+      go-github-com-kr-logfmt
+      go-github-com-go-logfmt-logfmt
+      go-github-com-fatih-color
+      go-github-com-aybabtme-rgbterm))
     (home-page "https://github.com/aybabtme/humanlog")
     (synopsis "humanlog")
     (description
-      "Read logs from @code{stdin} and prints them back to @code{stdout}, but prettier.")
+     "Read logs from @code{stdin} and prints them back to @code{stdout}, but prettier.")
     (license license:asl2.0)))
 
 (define-public go-1.19
@@ -645,16 +645,17 @@ equal.")
       '(#:import-path "mvdan.cc/gofumpt"
         #:tests? #f))
      (propagated-inputs
-      (list go-github-com-pkg-diff
-            go-github-com-kr-text
-            go-github-com-kr-pretty
-            go-golang-org-x-tools
-            go-golang-org-x-sys
-            go-golang-org-x-sync
-            go-golang-org-x-mod
-            go-github-com-rogpeppe-go-internal
-            go-github-com-google-go-cmp-cmp
-            go-github-com-frankban-quicktest))
+      (list
+       go-github-com-pkg-diff
+       go-github-com-kr-text
+       go-github-com-kr-pretty
+       go-golang-org-x-tools
+       go-golang-org-x-sys
+       go-golang-org-x-sync
+       go-golang-org-x-mod
+       go-github-com-rogpeppe-go-internal
+       go-github-com-google-go-cmp-cmp
+       go-github-com-frankban-quicktest))
      (home-page "https://mvdan.cc/gofumpt")
      (synopsis "gofumpt")
      (description
@@ -680,8 +681,10 @@ That is, @@code{gofumpt} is happy with a subset of the formats that
     (arguments
      '(#:import-path "mvdan.cc/xurls/v2"
        #:unpack-path "mvdan.cc/xurls/v2"))
-    (propagated-inputs `(("go-golang-org-x-sync" ,go-golang-org-x-sync)
-                         ("go-github-com-rogpeppe-go-internal" ,go-github-com-rogpeppe-go-internal)))
+    (propagated-inputs
+     (list
+      go-golang-org-x-sync
+      go-github-com-rogpeppe-go-internal))
     (home-page "https://mvdan.cc/xurls/v2")
     (synopsis "xurls")
     (description
@@ -758,11 +761,13 @@ with new \"golden\" output that is deemed correct.")
      (arguments
       '(#:import-path "mvdan.cc/unparam"
         #:tests? #f))
-     (propagated-inputs `(("go-golang-org-x-sys" ,go-golang-org-x-sys)
-                          ("go-golang-org-x-mod" ,go-golang-org-x-mod)
-                          ("go-github-com-pkg-diff" ,go-github-com-pkg-diff)
-                          ("go-golang-org-x-tools" ,go-golang-org-x-tools)
-                          ("go-github-com-rogpeppe-go-internal" ,go-github-com-rogpeppe-go-internal)))
+     (propagated-inputs
+      (list
+       go-golang-org-x-sys
+       go-golang-org-x-mod
+       go-github-com-pkg-diff
+       go-golang-org-x-tools
+       go-github-com-rogpeppe-go-internal))
      (home-page "https://mvdan.cc/unparam")
      (synopsis "unparam")
      (description
@@ -818,16 +823,18 @@ following:")
     (version "0.11.0")
     (source
      (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://github.com/golang/tools/archive/refs/tags/gopls/"
-             "v" version ".tar.gz"))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://go.googlesource.com/tools")
+             (commit (string-append "gopls/v" version))))
+       (file-name (git-file-name name version))
        (sha256
         (base32
-         "0c9r13515896wr1hixchbj1kq5isa2v2cf2lxdh4fny7pi001pdm"))))
+         "1l9y1rp7x51s6dnjn227fhdlnz4z1h41jn3x1aq49qki241w7m73"))))
     (build-system go-build-system)
-    (arguments '(#:import-path "golang.org/x/tools/gopls"
-                 #:unpack-path "github.com/golang/tools/gopls"))
+    (arguments
+     '(#:import-path "golang.org/x/tools/gopls"
+       #:unpack-path "go.googlesource.com/tools/gopls"))
     (propagated-inputs
      (list
       go-github-com-google-go-cmp-cmp
@@ -847,7 +854,9 @@ following:")
       go-github-com-google-safehtml
       go-golang-org-x-exp
       go-golang-org-x-vuln))
-    (home-page "https://github.com/golang/tools/blob/master/gopls")
-    (synopsis "Official language server for the Go language.")
-    (description "")
+    (home-page "https://golang.org/x/tools/gopls")
+    (synopsis "Official language server for the Go language")
+    (description
+     "Pronounced \"Go please\", this is the official Go language server developed by
+the Go team.  It provides IDE features to any LSP-compatible editor.")
     (license license:bsd-3)))
