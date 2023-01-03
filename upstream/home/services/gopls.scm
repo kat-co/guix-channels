@@ -23,14 +23,16 @@
   #:use-module (guix gexp)
   #:use-module (guix packages)
 
-  #:use-module (shepherd support)
-
   #:use-module (upstream packages golang)
 
   #:export (gopls-configuration))
 
 (define %socket-path-default
-  (string-append "unix;" %user-runtime-dir "/gopls"))
+  (string-append
+   "unix;"
+   (or (getenv "XDG_RUNTIME_DIR")
+       (format #f "/run/user/~a" (getuid)))
+   "/gopls"))
 
 (define-configuration gopls-configuration
   (address
