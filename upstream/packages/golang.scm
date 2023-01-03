@@ -25,6 +25,36 @@
 
   #:use-module (gnu packages golang))
 
+(define-public go-1.19
+  (package
+   (inherit go-1.17)
+   (name "go")
+   (version "1.19.1")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+           (url "https://github.com/golang/go")
+           (commit (string-append "go" version))))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32
+       "1gah4zhbkgbwrrryfmzdv2qwi1rgxk10q2r3hnlcb1dybf9c1i1w"))))
+   (arguments
+    (substitute-keyword-arguments
+     (package-arguments go-1.17)
+     ((#:tests? _ #f) #f)
+     ((#:phases child-phases '%standard-phases)
+      `(modify-phases ,child-phases
+        (replace 'install-doc-files
+          (lambda* (#:key outputs #:allow-other-keys)
+            (let ((out (assoc-ref outputs "out")))
+              (for-each
+               (lambda (file)
+                 (install-file file (string-append out "/share/doc/go")))
+               '("CONTRIBUTING.md" "LICENSE" "PATENTS" "README.md"
+                 "SECURITY.md")))))))))))
+
 (define with-go-1.19
   (package-input-rewriting/spec `(("go" . ,(const go-1.19)))))
 
@@ -217,41 +247,40 @@ is similar to Go's standard library @code{json} and @code{xml} package.")
     (license license:expat)))
 
 (define-public go-honnef-co-go-tools
-  (with-go-1.19
-   (package
-     (name "go-honnef-co-go-tools")
-     (version "0.3.3")
-     (source
-      (origin
-        (method git-fetch)
-        (uri (git-reference
-              (url "https://github.com/dominikh/go-tools")
-              (commit (string-append "v" version))))
-        (file-name (git-file-name name version))
-        (sha256
-         (base32 "099z04v7vvwwglnps315s9fmal68xvzlc1g8m26iqi980grbwn32"))))
-     (build-system go-build-system)
-     (arguments
-      `(#:import-path "honnef.co/go/tools"
-        #:tests? #f
-        ;; Source-only package
-        #:phases
-        (modify-phases %standard-phases
-          (delete 'build))))
-     (propagated-inputs
-      (list
-       go-golang-org-x-exp
-       go-golang-org-x-tools
-       go-golang-org-x-mod
-       go-github-com-kisielk-gotool
-       go-github-com-burntsushi-toml))
-     (home-page "https://honnef.co/go/tools")
-     (synopsis "Staticcheck advanced Go linter")
-     (description
-      "Staticcheck is a state of the art linter for the Go programming language.
+  (package
+    (name "go-honnef-co-go-tools")
+    (version "0.3.3")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/dominikh/go-tools")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "099z04v7vvwwglnps315s9fmal68xvzlc1g8m26iqi980grbwn32"))))
+    (build-system go-build-system)
+    (arguments
+     `(#:import-path "honnef.co/go/tools"
+       #:tests? #f
+       ;; Source-only package
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'build))))
+    (propagated-inputs
+     (list
+      go-golang-org-x-exp
+      go-golang-org-x-tools
+      go-golang-org-x-mod
+      go-github-com-kisielk-gotool
+      go-github-com-burntsushi-toml))
+    (home-page "https://honnef.co/go/tools")
+    (synopsis "Staticcheck advanced Go linter")
+    (description
+     "Staticcheck is a state of the art linter for the Go programming language.
 Using static analysis, it finds bugs and performance issues, offers
 simplifications, and enforces style rules.")
-     (license license:expat))))
+    (license license:expat)))
 
 (define-public staticcheck
   (package
@@ -396,36 +425,6 @@ October, 2014.  See our @url{https://shopifyengineering.myshopify.com/blogs/engi
     (description
      "Read logs from @code{stdin} and prints them back to @code{stdout}, but prettier.")
     (license license:asl2.0)))
-
-(define-public go-1.19
-  (package
-   (inherit go-1.17)
-   (name "go")
-   (version "1.19.1")
-   (source
-    (origin
-     (method git-fetch)
-     (uri (git-reference
-           (url "https://github.com/golang/go")
-           (commit (string-append "go" version))))
-     (file-name (git-file-name name version))
-     (sha256
-      (base32
-       "1gah4zhbkgbwrrryfmzdv2qwi1rgxk10q2r3hnlcb1dybf9c1i1w"))))
-   (arguments
-    (substitute-keyword-arguments
-     (package-arguments go-1.17)
-     ((#:tests? _ #f) #f)
-     ((#:phases child-phases '%standard-phases)
-      `(modify-phases ,child-phases
-        (replace 'install-doc-files
-          (lambda* (#:key outputs #:allow-other-keys)
-            (let ((out (assoc-ref outputs "out")))
-              (for-each
-               (lambda (file)
-                 (install-file file (string-append out "/share/doc/go")))
-               '("CONTRIBUTING.md" "LICENSE" "PATENTS" "README.md"
-                 "SECURITY.md")))))))))))
 
 ;;; gopls
 
@@ -627,42 +626,41 @@ equal.")
 
 ;; TODO: This must be built with >= go@1.19. Work to bump version upstream first.
 (define go-mvdan-cc-gofumpt
-  (with-go-1.19
-   (package
-     (name "go-mvdan-cc-gofumpt")
-     (version "0.4.0")
-     (source (origin
-               (method git-fetch)
-               (uri (git-reference
-                     (url "https://github.com/mvdan/gofumpt")
-                     (commit (string-append "v" version))))
-               (file-name (git-file-name name version))
-               (sha256
-                (base32
-                 "13ahi8q1a9h4dj6a7xp95c79d5svz5p37b6z91aswbq043qd417k"))))
-     (build-system go-build-system)
-     (arguments
-      '(#:import-path "mvdan.cc/gofumpt"
-        #:tests? #f))
-     (propagated-inputs
-      (list
-       go-github-com-pkg-diff
-       go-github-com-kr-text
-       go-github-com-kr-pretty
-       go-golang-org-x-tools
-       go-golang-org-x-sys
-       go-golang-org-x-sync
-       go-golang-org-x-mod
-       go-github-com-rogpeppe-go-internal
-       go-github-com-google-go-cmp-cmp
-       go-github-com-frankban-quicktest))
-     (home-page "https://mvdan.cc/gofumpt")
-     (synopsis "gofumpt")
-     (description
-      "Enforce a stricter format than @@code{gofmt}, while being backwards compatible.
+  (package
+    (name "go-mvdan-cc-gofumpt")
+    (version "0.4.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/mvdan/gofumpt")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "13ahi8q1a9h4dj6a7xp95c79d5svz5p37b6z91aswbq043qd417k"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "mvdan.cc/gofumpt"
+       #:tests? #f))
+    (propagated-inputs
+     (list
+      go-github-com-pkg-diff
+      go-github-com-kr-text
+      go-github-com-kr-pretty
+      go-golang-org-x-tools
+      go-golang-org-x-sys
+      go-golang-org-x-sync
+      go-golang-org-x-mod
+      go-github-com-rogpeppe-go-internal
+      go-github-com-google-go-cmp-cmp
+      go-github-com-frankban-quicktest))
+    (home-page "https://mvdan.cc/gofumpt")
+    (synopsis "gofumpt")
+    (description
+     "Enforce a stricter format than @@code{gofmt}, while being backwards compatible.
 That is, @@code{gofumpt} is happy with a subset of the formats that
 @@code{gofmt} is happy with.")
-     (license license:bsd-3))))
+    (license license:bsd-3)))
 
 (define-public go-mvdan-cc-xurls-v2
   (package
@@ -744,35 +742,34 @@ with new \"golden\" output that is deemed correct.")
 
 ;; TODO: This must be built with >= go@1.19. Work to bump version upstream first.
 (define-public go-mvdan-cc-unparam
-  (with-go-1.19
-   (package
-     (name "go-mvdan-cc-unparam")
-     (version "0.0.0-20221223090309-7455f1af531d")
-     (source (origin
-               (method git-fetch)
-               (uri (git-reference
-                     (url "https://github.com/mvdan/unparam")
-                     (commit (go-version->git-ref version))))
-               (file-name (git-file-name name version))
-               (sha256
-                (base32
-                 "0wynf0b32azxljncw5fh9bwkxpdflvf9q1z16wyj432566yjh12c"))))
-     (build-system go-build-system)
-     (arguments
-      '(#:import-path "mvdan.cc/unparam"
-        #:tests? #f))
-     (propagated-inputs
-      (list
-       go-golang-org-x-sys
-       go-golang-org-x-mod
-       go-github-com-pkg-diff
-       go-golang-org-x-tools
-       go-github-com-rogpeppe-go-internal))
-     (home-page "https://mvdan.cc/unparam")
-     (synopsis "unparam")
-     (description
-      "Reports unused function parameters and results in your code.")
-     (license license:bsd-3))))
+  (package
+    (name "go-mvdan-cc-unparam")
+    (version "0.0.0-20221223090309-7455f1af531d")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/mvdan/unparam")
+                    (commit (go-version->git-ref version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0wynf0b32azxljncw5fh9bwkxpdflvf9q1z16wyj432566yjh12c"))))
+    (build-system go-build-system)
+    (arguments
+     '(#:import-path "mvdan.cc/unparam"
+       #:tests? #f))
+    (propagated-inputs
+     (list
+      go-golang-org-x-sys
+      go-golang-org-x-mod
+      go-github-com-pkg-diff
+      go-golang-org-x-tools
+      go-github-com-rogpeppe-go-internal))
+    (home-page "https://mvdan.cc/unparam")
+    (synopsis "unparam")
+    (description
+     "Reports unused function parameters and results in your code.")
+    (license license:bsd-3)))
 
 (define-public go-golang-org-x-vuln
   (package
@@ -818,45 +815,46 @@ following:")
     (license license:bsd-3)))
 
 (define-public gopls
-  (package
-    (name "gopls")
-    (version "0.11.0")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://go.googlesource.com/tools")
-             (commit (string-append "gopls/v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "1l9y1rp7x51s6dnjn227fhdlnz4z1h41jn3x1aq49qki241w7m73"))))
-    (build-system go-build-system)
-    (arguments
-     '(#:import-path "golang.org/x/tools/gopls"
-       #:unpack-path "go.googlesource.com/tools/gopls"))
-    (propagated-inputs
-     (list
-      go-github-com-google-go-cmp-cmp
-      go-github-com-jba-printsrc
-      go-github-com-jba-templatecheck
-      go-github-com-sergi-go-diff
-      go-golang-org-x-mod
-      go-golang-org-x-sync
-      go-golang-org-x-sys
-      go-golang-org-x-text
-      go-golang-org-x-tools
-      go-gopkg-in-yaml-v3
-      go-honnef-co-go-tools
-      go-mvdan-cc-gofumpt
-      go-mvdan-cc-xurls-v2
-      go-github-com-burntsushi-toml
-      go-github-com-google-safehtml
-      go-golang-org-x-exp
-      go-golang-org-x-vuln))
-    (home-page "https://golang.org/x/tools/gopls")
-    (synopsis "Official language server for the Go language")
-    (description
-     "Pronounced \"Go please\", this is the official Go language server developed by
+  (with-go-1.19
+   (package
+     (name "gopls")
+     (version "0.11.0")
+     (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+              (url "https://go.googlesource.com/tools")
+              (commit (string-append "gopls/v" version))))
+        (file-name (git-file-name name version))
+        (sha256
+         (base32
+          "1l9y1rp7x51s6dnjn227fhdlnz4z1h41jn3x1aq49qki241w7m73"))))
+     (build-system go-build-system)
+     (arguments
+      '(#:import-path "golang.org/x/tools/gopls"
+        #:unpack-path "go.googlesource.com/tools/gopls"))
+     (propagated-inputs
+      (list
+       go-github-com-google-go-cmp-cmp
+       go-github-com-jba-printsrc
+       go-github-com-jba-templatecheck
+       go-github-com-sergi-go-diff
+       go-golang-org-x-mod
+       go-golang-org-x-sync
+       go-golang-org-x-sys
+       go-golang-org-x-text
+       go-golang-org-x-tools
+       go-gopkg-in-yaml-v3
+       go-honnef-co-go-tools
+       go-mvdan-cc-gofumpt
+       go-mvdan-cc-xurls-v2
+       go-github-com-burntsushi-toml
+       go-github-com-google-safehtml
+       go-golang-org-x-exp
+       go-golang-org-x-vuln))
+     (home-page "https://golang.org/x/tools/gopls")
+     (synopsis "Official language server for the Go language")
+     (description
+      "Pronounced \"Go please\", this is the official Go language server developed by
 the Go team.  It provides IDE features to any LSP-compatible editor.")
-    (license license:bsd-3)))
+     (license license:bsd-3))))
