@@ -18,12 +18,11 @@
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services utils)
   #:use-module (gnu packages)
+  #:use-module (gnu packages golang)
   #:use-module (gnu services configuration)
 
   #:use-module (guix gexp)
   #:use-module (guix packages)
-
-  #:use-module (upstream packages golang)
 
   #:export (gopls-configuration))
 
