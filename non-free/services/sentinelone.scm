@@ -1,4 +1,4 @@
-;;; Copyright © 2021, 2022 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2021, 2022, 2023 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -146,9 +146,13 @@ to user's machines.")
               ;; This list came from the `dirs` file of the .deb installer.
               (writeable-paths (map (lambda (f) (string-append #$%s1-root-path f))
                                     (list "." ; main s1 folder
+                                          ".storage"
                                           "agent_modules"
+                                          "artifacts/filetypes"
+                                          "artifacts/yara"
                                           "assets"
                                           "auto_uploads"
+                                          "certificates"
                                           "cgroups"
                                           "comm_sdk"
                                           "configuration"
@@ -156,7 +160,6 @@ to user's machines.")
                                           "model"
                                           "mount"
                                           "rso"
-                                          ".storage"
                                           "tmp"
                                           "uploads"))))
           ;; Create all the paths the agent expects and the root directory for
@@ -186,9 +189,10 @@ to user's machines.")
         (for-each
          (lambda (f)
            (let ((dest (cdr f)))
-             (unless (and (stat dest #f) (symbolic-link? dest))
-               ;; When redeploying, don't try and link these again.
-               (symlink (car f) (cdr f)))))
+             ;; When redeploying, symlink the new paths
+             (when (and (stat dest #f) (symbolic-link? dest))
+               (delete-file dest))
+             (symlink (car f) (cdr f))))
          (list
           (cons #$%s1-log-path #$(string-append %s1-root-path "/log"))
           (cons #$(string-append "/etc/" %s1-etc-path %s1-installation-params-path)
