@@ -23,7 +23,9 @@
   #:use-module (guix transformations)
   #:use-module (guix utils)
 
-  #:use-module (gnu packages golang))
+  #:use-module (gnu packages golang)
+  #:use-module (gnu packages security-token)
+  #:use-module (gnu packages tls))
 
 (define with-go-1.19
   (package-input-rewriting/spec `(("go" . ,(const go-1.19)))))
@@ -243,3 +245,29 @@ and customization.  We've been
 successfully using it in all development and test environments at Shopify since
 October, 2014.  See our @url{https://shopifyengineering.myshopify.com/blogs/engineering/building-and-testing-resilient-ruby-on-rails-applications,blog post} on resiliency for more information.")
     (license license:expat)))
+
+(define-public openconnect-gp-okta
+  (package
+    (name "openconnect-gp-okta")
+    (version "0.1.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/kat-co/openconnect-gp-okta")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0j9znd0l1mfc9gwah6zca35yhvi4avz02xnrps0zk6phafg3lw1f"))))
+    (build-system go-build-system)
+    (arguments
+     `(#:go ,go-1.20
+       #:import-path "openconnect-gp-okta"))
+    (inputs (list libfido2 libressl))
+    (synopsis "@code{openconnect} wrapper which performs a webauthn flow")
+    (description
+     "@code{openconnect-gp-okta} first performs a webauthn flow against a
+GlobalProtect VPN endpoint which uses Okta and an authentication device. It then
+launches @code{openconnect} and passes the pre-login cookie obtained to it.")
+    (home-page "http://github.com/kat-co/openconnect-gp-okta")
+    (license license:gpl3+)))
