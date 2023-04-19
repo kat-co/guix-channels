@@ -61,7 +61,6 @@
       (description "A CLI utility to create graphs from CSV files.")
       (license #f))))
 
-
 (define-public python-fido2
   (package
     (name "python-fido2")
@@ -116,29 +115,3 @@ implementing a Relying Party.")
     ;; Apache License, version 2.0.  The maintainers have customized these
     ;; files for internal use, so they are not really a bundled dependency.
     (license (list license:bsd-2 license:asl2.0))))
-
-;; TODO: #62906
-(define-public python-pytest-trio
-  (package
-    (name "python-pytest-trio")
-    (version "0.7.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "pytest-trio" version))
-       (sha256
-        (base32 "0c8cqf9by2884riksrqymqfp2g1d2d798a2zalcw9hmf34c786y0"))))
-    (build-system python-build-system)
-    (arguments
-     `(#:tests? #f))
-    (native-inputs
-     (list python-hypothesis python-pytest python-pytest-cov))
-    (propagated-inputs
-     (list python-async-generator python-outcome python-pytest python-trio))
-    (home-page "https://github.com/python-trio/pytest-trio")
-    (synopsis "Pytest plugin for trio")
-    (description
-     "This is a pytest plugin to help you test projects that use Trio, a
-friendly library for concurrency and async I/O in Python.")
-    ;; Either license applies.
-    (license (list license:expat license:asl2.0))))
