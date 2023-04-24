@@ -190,7 +190,9 @@ to user's machines.")
          (lambda (f)
            (let ((dest (cdr f)))
              ;; When redeploying, symlink the new paths
-             (when (and (stat dest #f) (symbolic-link? dest))
+             (when (with-exception-handler (lambda _ #f)
+                     (lambda _ (lstat dest))
+                     #:unwind? #t)
                (delete-file dest))
              (symlink (car f) (cdr f))))
          (list
