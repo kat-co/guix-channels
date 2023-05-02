@@ -14,24 +14,42 @@
 ;;; along with this. If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (upstream packages xorg)
+  #:use-module (guix download)
   #:use-module (guix packages)
-  #:use-module (guix gexp)
-  #:use-module (guix utils))
+
+  #:use-module (gnu packages gl))
 
 (define-public (xorg-with-mesa xorg-server mesa)
   "Returns an xorg-server package which will wrap the call to Xorg to include the
 correct XORG_DRI_DRIVER_PATH for the mesa package provided."
   (package
-   (inherit xorg-server)
-   (arguments
-    (substitute-keyword-arguments
-     (package-arguments xorg-server)
-     ((#:phases child-phases '%standard-phases)
-      #~(modify-phases #$child-phases
-                       (add-after 'install 'wrap
-                                  (lambda* (#:key outputs #:allow-other-keys)
-                                    (let* ((out (assoc-ref outputs "out"))
-                                           (bin (string-append out "/bin"))
-                                           (xorg (string-append bin "/Xorg")))
-                                      (wrap-program xorg
-                                                    '("XORG_DRI_DRIVER_PATH" ":" = (#$(file-append mesa "/lib/dri")))))))))))))
+    (inherit xorg-server)
+    (arguments
+     (substitute-keyword-arguments
+         (package-arguments xorg-server)
+       ((#:phases child-phases '%standard-phases)
+        #~(modify-phases #$child-phases
+            (add-after 'install 'wrap
+              (lambda* (#:key outputs #:allow-other-keys)
+                (let* ((out (assoc-ref outputs "out"))
+                       (bin (string-append out "/bin"))
+                       (xorg (string-append bin "/Xorg")))
+                  (wrap-program xorg
+                    '("XORG_DRI_DRIVER_PATH" ":" = (#$(file-append mesa "/lib/dri")))))))))))))
+
+(define-public mesa-next
+  (package
+    (inherit mesa)
+    (version "22.3.4")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (list (string-append "https://mesa.freedesktop.org/archive/"
+                                 "mesa-" version ".tar.xz")
+                  (string-append "ftp://ftp.freedesktop.org/pub/mesa/"
+                                 "mesa-" version ".tar.xz")
+                  (string-append "ftp://ftp.freedesktop.org/pub/mesa/"
+                                 version "/mesa-" version ".tar.xz")))
+       (sha256
+        (base32
+         "14s557c7k0ncb5wj9lz901pfjzg887zprjc97kp1j6gl0fpxv89p"))))))
