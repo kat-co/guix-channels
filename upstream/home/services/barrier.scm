@@ -17,7 +17,7 @@
   #:use-module (gnu home services)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services utils)
-  #:use-module (gnu packages barrier)
+  #:use-module (upstream packages barrier)
   #:use-module (gnu services configuration)
 
   #:use-module (guix gexp)
@@ -120,7 +120,8 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
   (let ((cli-args (barriers-cli-arguments config))
         (port-number (barriers-configuration-port-number config))
         (disable-client-cert-checking
-         (barriers-configuration-disable-client-cert-checking config)))
+         (barriers-configuration-disable-client-cert-checking config))
+        (barrier (barriers-configuration-barrier config)))
     (list (shepherd-service
            (documentation "Runs barrier server.")
            (provision '(barriers))
@@ -134,7 +135,12 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
                            "--config" #$(barriers-configuration-file config)
                            #$@cli-args
                            #$(when disable-client-cert-checking
-                               "--disable-client-cert-checking"))))
+                               "--disable-client-cert-checking"))
+                     #:log-file (string-append
+                                 (or (getenv "XDG_LOG_HOME")
+                                     (format #f "~a/.local/var/log"
+                                             (getenv "HOME")))
+                                 "/barrierc.log")))
            (stop #~(make-kill-destructor))))))
 
 (define-public home-barriers-service-type
@@ -195,7 +201,8 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
 
 (define (home-barrierc-shepherd-service config)
   (let ((cli-args (barrierc-cli-arguments config))
-        (server-address (barrierc-configuration-server-address config)))
+        (server-address (barrierc-configuration-server-address config))
+        (barrier (barrierc-configuration-barrier config)))
     (list (shepherd-service
            (documentation "Runs the barrier client.")
            (provision '(barrierc))
@@ -209,7 +216,11 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
                            #$@cli-args
                            #$(unless (string-null? server-address)
                                server-address))
-                     #:log-file "/var/log/barrierc"))
+                     #:log-file (string-append
+                                 (or (getenv "XDG_LOG_HOME")
+                                     (format #f "~a/.local/var/log"
+                                             (getenv "HOME")))
+                                 "/barrierc.log")))
            (stop #~(make-kill-destructor))))))
 
 (define-public home-barrierc-service-type
