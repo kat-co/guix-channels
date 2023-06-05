@@ -33,21 +33,18 @@
        (format #f "/run/user/~a" (getuid)))
    "/gopls"))
 
-(define-configuration gopls-configuration
+(define-configuration/no-serialization gopls-configuration
   (address
    (string %socket-path-default)
    "The address gopls should listen to. The default is
-\"unix;$XDG_RUNTIME_DIR/gopls\""
-   empty-serializer)
+\"unix;$XDG_RUNTIME_DIR/gopls\"")
   (address-debug
    (string "")
    "The address gopls should listen to to serve debug information. The default is
-off."
-   empty-serializer)
+off.")
   (resource-limits
    (list '())
-   "The alist of resource limits to pass to Shepherd's make-forkexec functions."
-   empty-serializer))
+   "The alist of resource limits to pass to Shepherd's make-forkexec functions."))
 
 (define (home-gopls-shepherd-service config)
   (let* ((address (string-trim-both (gopls-configuration-address config)))
@@ -56,6 +53,7 @@ off."
          (debug? (not (zero? (string-length address-debug)))))
     (list
      (shepherd-service
+      (documentation "Run the gopls LSP server.")
       (provision '(gopls))
       (start #~(make-forkexec-constructor
                 `(#$(file-append gopls "/bin/gopls")
