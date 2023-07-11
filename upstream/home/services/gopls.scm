@@ -18,8 +18,9 @@
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services utils)
   #:use-module (gnu packages)
-  #:use-module (gnu packages golang)
   #:use-module (gnu services configuration)
+
+  #:use-module (upstream packages golang)
 
   #:use-module (guix gexp)
   #:use-module (guix packages)
@@ -34,6 +35,9 @@
    "/gopls"))
 
 (define-configuration/no-serialization gopls-configuration
+  (gopls
+   (package gopls)
+   "The gopls package to use.")
   (address
    (string %socket-path-default)
    "The address gopls should listen to. The default is
@@ -50,7 +54,8 @@ off.")
   (let* ((address (string-trim-both (gopls-configuration-address config)))
          (limits (gopls-configuration-resource-limits config))
          (address-debug (string-trim-both (gopls-configuration-address-debug config)))
-         (debug? (not (zero? (string-length address-debug)))))
+         (debug? (not (zero? (string-length address-debug))))
+         (gopls (gopls-configuration-gopls config)))
     (list
      (shepherd-service
       (documentation "Run the gopls LSP server.")

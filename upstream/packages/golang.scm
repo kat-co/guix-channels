@@ -271,3 +271,116 @@ GlobalProtect VPN endpoint which uses Okta and an authentication device. It then
 launches @code{openconnect} and passes the pre-login cookie obtained to it.")
     (home-page "http://github.com/kat-co/openconnect-gp-okta")
     (license license:gpl3+)))
+
+(define-public govulncheck
+  (package
+   (name "govulncheck")
+   (version "v0.0.0-20230110180137-6ad3e3d07815")
+   (source (origin
+            (method git-fetch)
+            (uri (git-reference
+                  (url "https://go.googlesource.com/vuln")
+                  (commit (go-version->git-ref version))))
+            (file-name (git-file-name name version))
+            (sha256
+             (base32
+              "1fhz27ni8bs872rgvqq700qacak9v45zy0fh2hilq21sk6dks72r"))))
+   (build-system go-build-system)
+   (arguments
+    `(#:import-path "golang.org/x/vuln"
+      #:go ,go-1.20
+      #:install-source? #f
+      #:phases
+      #~(modify-phases
+          %standard-phases
+          (add-after 'unpack 'remove-go-mod-tidy
+                     (lambda _
+                       (substitute* "src/golang.org/x/vuln/checks.bash"
+                                    (("go mod tidy")
+                                     #$(file-append coreutils-minimal "/bin/true")))))
+          (replace 'build
+                   (lambda arguments
+                     (apply (assoc-ref %standard-phases
+                                       'build)
+                            `(,@arguments #:import-path
+                                          "golang.org/x/vuln/cmd/govulncheck")))))))
+   (native-inputs (list coreutils-minimal))
+   (inputs (list go-golang-org-x-sys
+                 go-github-com-google-renameio
+                 go-github-com-burntsushi-toml
+                 go-mvdan-cc-unparam
+                 go-honnef-co-go-tools
+                 go-golang-org-x-tools
+                 go-golang-org-x-sync
+                 go-golang-org-x-mod
+                 go-golang-org-x-exp
+                 go-github-com-google-go-cmp-cmp
+                 go-github-com-google-go-cmdtest
+                 go-github-com-client9-misspell))
+   (home-page "https://golang.org/x/vuln")
+   (synopsis "Go Vulnerability Management")
+   (description
+    "This repository contains packages for accessing and analyzing data from
+the @url{https://vuln.go.dev,Go Vulnerability Database}.")
+   (license license:bsd-3)))
+
+(define-public go-golang-org-x-vuln
+  (package
+    (inherit govulncheck)
+    (name "go-golang-org-x-vuln")
+    (arguments
+     `(#:import-path "golang.org/x/vuln"
+       #:tests? #f
+       #:install-source? #t
+       #:phases (modify-phases %standard-phases
+                  (delete 'build))))
+    (propagated-inputs (package-inputs govulncheck))
+    (native-inputs '())
+    (inputs '())))
+
+(define-public gopls
+  (package
+   (name "gopls")
+   (version "0.12.0")
+   (source (origin
+            (method git-fetch)
+            (uri (git-reference
+                  (url "https://go.googlesource.com/tools")
+                  (commit (string-append "gopls/v" version))))
+            (file-name (git-file-name name version))
+            (sha256
+             (base32
+              "04bq7rh6d6mgxm0lsi8y9v1x7cgx4nvjlsyvxl89r6rcqh3n1lfb"))))
+   (build-system go-build-system)
+   (arguments
+    `(#:import-path "golang.org/x/tools/gopls"
+      #:unpack-path "golang.org/x/tools"
+      #:go ,go-1.20
+      #:install-source? #f
+      #:phases (modify-phases %standard-phases
+                              (add-before 'unpack 'override-tools
+                                          (lambda _
+                                            (delete-file-recursively "src/golang.org/x/tools"))))))
+   (propagated-inputs (list go-github-com-google-go-cmp-cmp
+                            go-github-com-jba-printsrc
+                            go-github-com-jba-templatecheck
+                            go-github-com-sergi-go-diff
+                            go-golang-org-x-mod
+                            go-golang-org-x-sync
+                            go-golang-org-x-sys
+                            go-golang-org-x-text
+                            go-gopkg-in-yaml-v3
+                            go-honnef-co-go-tools
+                            go-github-com-burntsushi-toml
+                            go-github-com-google-safehtml
+                            go-golang-org-x-exp
+                            go-mvdan-cc-gofumpt
+                            go-golang-org-x-vuln
+                            go-mvdan-cc-xurls))
+   (home-page "https://golang.org/x/tools/gopls")
+   (synopsis "Official language server for the Go language")
+   (description
+    "Pronounced ``Go please'', this is the official Go language server
+developed by the Go team.  It provides IDE features to any LSP-compatible
+editor.")
+   (license license:bsd-3)))
