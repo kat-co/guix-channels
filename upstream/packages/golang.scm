@@ -17,12 +17,14 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix build-system go)
   #:use-module (guix build utils)
   #:use-module (guix transformations)
   #:use-module (guix utils)
 
+  #:use-module (gnu packages base)
   #:use-module (gnu packages golang)
   #:use-module (gnu packages security-token)
   #:use-module (gnu packages tls))
@@ -287,21 +289,23 @@ launches @code{openconnect} and passes the pre-login cookie obtained to it.")
                 "1fhz27ni8bs872rgvqq700qacak9v45zy0fh2hilq21sk6dks72r"))))
     (build-system go-build-system)
     (arguments
-     `(#:import-path "golang.org/x/vuln"
-       #:go ,go-1.20
-       #:install-source? #f
-       #:phases ,#~(modify-phases %standard-phases
-                     (add-after 'unpack 'remove-go-mod-tidy
-                       (lambda _
-                         (substitute* "src/golang.org/x/vuln/checks.bash"
-                           (("go mod tidy")
-                            #$(file-append coreutils-minimal "/bin/true")))))
-                     (replace 'build
-                       (lambda arguments
-                         (apply (assoc-ref %standard-phases
-                                           'build)
-                                `(,@arguments #:import-path
-                                              "golang.org/x/vuln/cmd/govulncheck")))))))
+     (list #:import-path "golang.org/x/vuln"
+           #:go go-1.20
+           #:install-source? #f
+           #:phases #~(modify-phases %standard-phases
+                        (add-after 'unpack 'remove-go-mod-tidy
+                          (lambda _
+                            (substitute* "src/golang.org/x/vuln/checks.bash"
+                              (("go mod tidy")
+                               (string-append
+                                #$(this-package-native-input "coreutils-minimal")
+                                "/bin/true")))))
+                        (replace 'build
+                          (lambda arguments
+                            (apply (assoc-ref %standard-phases
+                                              'build)
+                                   `(,@arguments #:import-path
+                                                 "golang.org/x/vuln/cmd/govulncheck")))))))
     (native-inputs (list coreutils-minimal))
     (inputs (list go-golang-org-x-sys
                   go-github-com-google-renameio
