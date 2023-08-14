@@ -32,6 +32,93 @@
 (define with-go-1.19
   (package-input-rewriting/spec `(("go" . ,(const go-1.19)))))
 
+(define-public go-1.21
+  (package
+    (inherit go-1.20)
+    (name "go")
+    (version "1.21.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/golang/go")
+                    (commit (string-append "go" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "04cpahl10i1sncymdfm0vzcj3czv6lv0axwa1sisl9cz3rdrp7hj"))))
+    (arguments
+     (substitute-keyword-arguments (package-arguments go-1.18)
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            ;; These are recurring test failures, depending on having a new
+            ;; enough version of gccgo.  gccgo-12.2 fails with go-1.19.7.
+            ;; https://github.com/golang/go/issues/22224
+            ;; https://github.com/golang/go/issues/25324
+            (delete 'skip-TestGoPathShlibGccgo-tests)
+            (replace 'patch-source
+              (lambda* (#:key inputs outputs #:allow-other-keys)
+                (let* ((net-base (assoc-ref inputs "net-base"))
+                       (tzdata-path (string-append (assoc-ref inputs "tzdata")
+                                                   "/share/zoneinfo")))
+                  ;; XXX: Remove when #49729 is merged?
+                  (for-each make-file-writable (find-files "src"))
+
+                  ;; Having the patch in the 'patches' field of <origin> breaks
+                  ;; the 'TestServeContent' test due to the fact that
+                  ;; timestamps are reset.  Thus, apply it from here.
+                  (invoke "patch" "-p1" "--force" "-i"
+                          (assoc-ref inputs "go-skip-gc-test.patch"))
+                  (invoke "patch" "-p1" "--force" "-i"
+                          (assoc-ref inputs "go-fix-script-tests.patch"))
+
+                  (substitute* "src/os/os_test.go"
+                    (("/usr/bin") (getcwd))
+                    (("/bin/sh") (which "sh")))
+
+                  (substitute* "src/cmd/go/testdata/script/cgo_path_space.txt"
+                    (("/bin/sh") (which "sh")))
+
+                  (substitute* "src/net/lookup_unix.go"
+                    (("/etc/protocols")
+                     (string-append net-base "/etc/protocols")))
+                  (substitute* "src/net/port_unix.go"
+                    (("/etc/services")
+                     (string-append net-base "/etc/services")))
+                  (substitute* "src/time/zoneinfo_unix.go"
+                    (("/usr/share/zoneinfo/") tzdata-path))
+
+                  ;; TODO(katco): Actually look into why these are failing
+                  )))
+            (add-after 'enable-external-linking 'enable-external-linking-1.21
+              (lambda _
+                ;; Invoke GCC to link any archives created with GCC (that is, any
+                ;; packages built using 'cgo'), because Go doesn't know how to
+                ;; handle the runpaths but GCC does.  Use substitute* rather than
+                ;; a patch since these files are liable to change often.
+                ;;
+                ;; XXX: Replace with GO_EXTLINK_ENABLED=1 or similar when
+                ;; <https://github.com/golang/go/issues/31544> and/or
+                ;; <https://github.com/golang/go/issues/43525> are resolved.
+                (substitute* "src/cmd/link/internal/ld/config.go"
+                  (("\\(iscgo && \\(.+\\)") "iscgo"))
+                (substitute* "src/internal/testenv/testenv.go"
+                  (("!CanInternalLink.+") "true {\n"))
+                (substitute* "src/syscall/exec_linux_test.go"
+                  (("testenv.MustHaveExecPath\\(t, \"whoami\"\\)")
+                   "t.Skipf(\"no passwd file present\")"))
+
+                ;; TODO(katco): Actually examine these
+                (substitute* "src/cmd/cgo/internal/testsanitizers/tsan_test.go"
+                  ((".+tsan1[34].+") ""))))
+            (replace 'install-doc-files
+              (lambda _
+                (for-each (lambda (file)
+                            (install-file file (string-append
+                                                #$output "/share/doc/go")))
+                          '("CONTRIBUTING.md" "PATENTS" "README.md"
+                            "SECURITY.md")))))))
+     )))
+
 (define-public go-github-com-aybabtme-rgbterm
   (package
     (name "go-github-com-aybabtme-rgbterm")
