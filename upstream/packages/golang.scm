@@ -145,7 +145,7 @@
                   (for-each
                    (lambda (file)
                      (copy-recursively file (string-append out "/lib/go/" file)))
-                   '("bin" "lib" "VERSION" "pkg/include" "pkg/tool"))
+                   '("bin" "go.env" "lib" "VERSION" "pkg/include" "pkg/tool"))
 
                   (symlink "lib/go/bin" (string-append out "/bin"))
 
