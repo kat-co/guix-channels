@@ -26,6 +26,7 @@
 
   #:use-module (gnu packages base)
   #:use-module (gnu packages golang)
+  #:use-module (gnu packages golang-check)
   #:use-module (gnu packages security-token)
   #:use-module (gnu packages tls))
 
