@@ -1,4 +1,4 @@
-;;; Copyright © 2020, 2021, 2022 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2023 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -30,34 +30,107 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages ruby)
   #:use-module (gnu packages shells)
+  ;; sbcl-mcclim
+  #:use-module (gnu packages fontutils)
+  #:use-module (gnu packages gtk)
+  #:use-module (gnu packages pkg-config)
 
   #:use-module (upstream packages networking))
+
+(define-public sbcl-mcclim
+  (let ((commit "099b7f33e63877c829ad6a35311ccee8a5ed1141")
+        (revision "4"))
+    (package
+      (name "sbcl-mcclim")
+      (version (git-version "0.9.7" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://codeberg.org/McCLIM/McCLIM")
+               (commit commit)))
+         (file-name (git-file-name "cl-mcclim" version))
+         (sha256
+          (base32 "03gpz7z559dbzad3ry4jdsc2kf7va2vf5q3qs6x6amrkqqxp1rig"))))
+      (build-system asdf-build-system/sbcl)
+      (native-inputs
+       (list sbcl-fiveam pkg-config))
+      (inputs
+       (list fontconfig
+             freetype
+             harfbuzz
+             sbcl-alexandria
+             sbcl-babel
+             sbcl-bordeaux-threads
+             sbcl-cffi
+             sbcl-cluffer
+             sbcl-cl-base64
+             sbcl-cl-dejavu
+             sbcl-cl-freetype2
+             sbcl-cl-pdf
+             sbcl-cl-unicode
+             sbcl-cl-vectors
+             sbcl-cl-who
+             sbcl-closer-mop
+             sbcl-clx
+             sbcl-flexi-streams
+             sbcl-flexichain
+             sbcl-log4cl
+             sbcl-lorem-ipsum
+             sbcl-opticl
+             sbcl-slime-swank
+             sbcl-spatial-trees
+             sbcl-trivial-features
+             sbcl-trivial-garbage
+             sbcl-trivial-gray-streams
+             sbcl-zpb-ttf))
+      (arguments
+       '(#:asd-systems '("mcclim"
+                         "clim-examples"
+                         ;; clim-debugger is required by cleavir.
+                         "clim-debugger")
+         #:phases
+         (modify-phases %standard-phases
+           (add-after 'unpack 'fix-paths
+             (lambda* (#:key inputs #:allow-other-keys)
+               (substitute* "Extensions/fontconfig/src/functions.lisp"
+                 (("libfontconfig\\.so")
+                  (search-input-file inputs "/lib/libfontconfig.so")))
+               (substitute* "Extensions/harfbuzz/src/functions.lisp"
+                 (("libharfbuzz\\.so")
+                  (search-input-file inputs "/lib/libharfbuzz.so"))))))))
+      (home-page "https://mcclim.common-lisp.dev/")
+      (synopsis "Common Lisp GUI toolkit")
+      (description
+       "McCLIM is an implementation of the @emph{Common Lisp Interface Manager
+specification}, a toolkit for writing GUIs in Common Lisp.")
+      (license license:lgpl2.1+))))
 
 (define-public sbcl-inotify
   (let ((commit "8ad433f646f0dd2205dbb2ec52663d6e9c0d9afe")
         (revision "1")
         (site "https://github.com/stassats/inotify"))
     (package
-     (name "sbcl-inotify")
-     (version (git-version "0.0.0" revision commit))
-     (source
-      (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url site)
-             (commit commit)))
-       (file-name (git-file-name "sbcl-inotify" version))
-       (sha256
-        (base32 "0jill05wsa7xbnkycc1ik1a05slv2h34fpyap2rxbnxvfjvyzw98"))))
-     (build-system asdf-build-system/sbcl)
-     (inputs
-      `(("cffi" ,sbcl-cffi)
-        ("iolib" ,sbcl-iolib)))
-     (home-page site)
-     (synopsis "FFI to inotify(7) for Common Lisp")
-     (description
-      "Interface to linux inotify(7).")
-     (license license:public-domain))))
+      (name "sbcl-inotify")
+      (version (git-version "0.0.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url site)
+               (commit commit)))
+         (file-name (git-file-name "sbcl-inotify" version))
+         (sha256
+          (base32 "0jill05wsa7xbnkycc1ik1a05slv2h34fpyap2rxbnxvfjvyzw98"))))
+      (build-system asdf-build-system/sbcl)
+      (inputs
+       `(("cffi" ,sbcl-cffi)
+         ("iolib" ,sbcl-iolib)))
+      (home-page site)
+      (synopsis "FFI to inotify(7) for Common Lisp")
+      (description
+       "Interface to linux inotify(7).")
+      (license license:public-domain))))
 
 (define-public cl-inotify
   (sbcl-package->cl-source-package sbcl-inotify))
