@@ -38,8 +38,8 @@
   #:use-module (upstream packages networking))
 
 (define-public sbcl-mcclim
-  (let ((commit "099b7f33e63877c829ad6a35311ccee8a5ed1141")
-        (revision "4"))
+  (let ((commit "63b07a30b62e439abc51b13b36de2fe9a938072e")
+        (revision "5"))
     (package
       (name "sbcl-mcclim")
       (version (git-version "0.9.7" revision commit))
@@ -51,7 +51,7 @@
                (commit commit)))
          (file-name (git-file-name "cl-mcclim" version))
          (sha256
-          (base32 "03gpz7z559dbzad3ry4jdsc2kf7va2vf5q3qs6x6amrkqqxp1rig"))))
+          (base32 "01m2nx51i5ix6x27g3vas3lj3i6k09bwdgl1smwil0amq06bd9nv"))))
       (build-system asdf-build-system/sbcl)
       (native-inputs
        (list sbcl-fiveam pkg-config))
