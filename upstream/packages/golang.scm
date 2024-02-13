@@ -1,4 +1,4 @@
-;;; Copyright © 2019, 2021, 2022, 2023 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2019, 2021, 2022, 2023, 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 
   #:use-module (gnu packages base)
   #:use-module (gnu packages golang)
+  #:use-module (gnu packages golang-build)
   #:use-module (gnu packages golang-check)
   #:use-module (gnu packages golang-web)
   #:use-module (gnu packages security-token)
