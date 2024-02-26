@@ -1,4 +1,4 @@
-;;; Copyright © 2021, 2022 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2021, 2022, 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,8 +15,11 @@
 
 (define-module (non-free packages security)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages cryptsetup)
   #:use-module (gnu packages debian)
+  #:use-module (gnu packages glib)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages linux)
 
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
@@ -136,4 +139,40 @@ hashes.")
 will not work alone. It is meant to be inherited from, and the source field
 overwritten with the location of the file provided to you by your
 organization.")
+    (license #f)))
+
+(define-public twingate
+  (package
+    (name "twingate")
+    (version "2023.250.97595")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append
+             "https://binaries.twingate.com/client/linux/DEB/x86_64/"
+             version "/twingate-amd64.deb"))
+       (sha256
+        (base32
+         "1yyxwkjjk8gnv6mmcs54h3w1h0n74wrpmjnkgqk4f06wnqj34f95"))))
+    (build-system binary-build-system)
+    (arguments
+     `(#:install-plan
+       '(("usr/" "."))
+       #:patchelf-plan
+       '(("usr/bin/twingate" ("libc" "libgccjit"))
+         ("usr/sbin/twingated" ("cryptsetup" "dbus" "libc" "libgccjit" "libnl"))
+         ("usr/bin/twingate-notifier" ("dbus" "libgccjit")))
+       #:phases
+       (modify-phases %standard-phases
+         (replace 'unpack
+           (lambda* (#:key inputs source #:allow-other-keys)
+             (let ((dpkg (string-append (assoc-ref inputs "dpkg")
+                                        "/bin/dpkg")))
+               (invoke dpkg "-x" source ".")))))))
+    (native-inputs (list dpkg))
+    (inputs (list cryptsetup dbus libgccjit libnl))
+    (supported-systems '("x86_64-linux"))
+    (home-page "https://www.twingate.com/")
+    (synopsis "Twingate Client")
+    (description "The Twingate client derived from a .deb file.")
     (license #f)))
