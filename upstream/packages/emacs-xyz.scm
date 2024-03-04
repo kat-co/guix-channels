@@ -1,4 +1,4 @@
-;;; Copyright © 2020, 2021 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -308,3 +308,52 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
 Development. Or better still, aiming to make you a better story teller
 when you deal with code.")
       (license license:gpl3+))))
+
+(define-public emacs-magit-section
+  (package
+    (name "emacs-magit-section")
+    (version "3.3.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://stable.melpa.org/packages/magit-section-"
+                           version ".tar"))
+       (sha256
+        (base32 "0l5g0668yhx00k51x5lrsnp4m4696xdy1cv3dz7szh6j3qs0qj8h"))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-dash))
+    (home-page "https://github.com/magit/magit")
+    (synopsis "Sections for read-only buffers")
+    (description
+     "This package implements the main user interface of Magit — the collapsible
+sections that make up its buffers.  This package used to be distributed as part
+of Magit but now it can also be used by other packages that have nothing to do
+with Magit or Git.")
+    (license #f)))
+
+(define-public emacs-kubernetes
+  (package
+    (name "emacs-kubernetes")
+    (version "0.18.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://stable.melpa.org/packages/kubernetes-"
+                           version ".tar"))
+       (sha256
+        (base32 "0cbw3d47jfcs13i0z30fpf3r85nj9l99053kxdmmjc2k37gcscrh"))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-dash
+                             emacs-magit-section
+                             emacs-magit-popup
+                             emacs-with-editor
+                             emacs-request
+                             emacs-s
+                             emacs-transient))
+    (home-page "https://github.com/kubernetes-el/kubernetes-el")
+    (synopsis "Magit-like porcelain for Kubernetes")
+    (description
+     "kubernetes-el is a text-based, interactive management interface for managing
+Kubernetes clusters within Emacs.")
+    (license #f)))
+
