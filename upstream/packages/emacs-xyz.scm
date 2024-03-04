@@ -365,47 +365,38 @@ Development. Or better still, aiming to make you a better story teller
 when you deal with code.")
       (license license:gpl3+))))
 
-(define-public emacs-magit-section
-  (package
-    (name "emacs-magit-section")
-    (version "3.3.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "https://stable.melpa.org/packages/magit-section-"
-                           version ".tar"))
-       (sha256
-        (base32 "0l5g0668yhx00k51x5lrsnp4m4696xdy1cv3dz7szh6j3qs0qj8h"))))
-    (build-system emacs-build-system)
-    (propagated-inputs (list emacs-dash))
-    (home-page "https://github.com/magit/magit")
-    (synopsis "Sections for read-only buffers")
-    (description
-     "This package implements the main user interface of Magit — the collapsible
-sections that make up its buffers.  This package used to be distributed as part
-of Magit but now it can also be used by other packages that have nothing to do
-with Magit or Git.")
-    (license #f)))
-
 (define-public emacs-kubernetes
   (package
     (name "emacs-kubernetes")
-    (version "0.18.0")
+    (version "20221229.1519")
     (source
      (origin
-       (method url-fetch)
-       (uri (string-append "https://stable.melpa.org/packages/kubernetes-"
-                           version ".tar"))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/kubernetes-el/kubernetes-el.git")
+             (commit "423c216fdef06d32dde835bb91daff353f41b72e")))
        (sha256
-        (base32 "0cbw3d47jfcs13i0z30fpf3r85nj9l99053kxdmmjc2k37gcscrh"))))
+        (base32 "0f2id1kba5l3l8fn0bil5scvvjklcklwsl7lgf5sdayw0airm94q"))))
     (build-system emacs-build-system)
     (propagated-inputs (list emacs-dash
-                             emacs-magit-section
+                             emacs-magit
                              emacs-magit-popup
                              emacs-with-editor
                              emacs-request
                              emacs-s
                              emacs-transient))
+    (arguments
+     '(#:include '("^[^/]+.el$" "^[^/]+.el.in$"
+                   "^dir$"
+                   "^[^/]+.info$"
+                   "^[^/]+.texi$"
+                   "^[^/]+.texinfo$"
+                   "^doc/dir$"
+                   "^doc/[^/]+.info$"
+                   "^doc/[^/]+.texi$"
+                   "^doc/[^/]+.texinfo$")
+       #:exclude '("^.dir-locals.el$" "^test.el$" "^tests.el$"
+                   "^[^/]+-test.el$" "^[^/]+-tests.el$" "^kubernetes-evil.el$")))
     (home-page "https://github.com/kubernetes-el/kubernetes-el")
     (synopsis "Magit-like porcelain for Kubernetes")
     (description
