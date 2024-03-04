@@ -200,6 +200,29 @@ encoding.")
      "Total ordering, equivalence, hashing, and constraints for floating-point types.")
     (license license:expat)))
 
+(define-public rust-dot-0.1
+  (package
+    (name "rust-dot")
+    (version "0.1.4")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "dot" version))
+       (file-name
+        (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32
+         "01jr7px6anh3yasz8cbbr9ij989gnwb3qdk4852mzzqw996nqjx7"))))
+    (build-system cargo-build-system)
+    (home-page
+     "https://github.com/GrahamDennis/dot-rust")
+    (synopsis
+     "Library for generating Graphviz DOT language files for graphs")
+    (description
+     "This package provides a library for generating Graphviz DOT language files
+for graphs.")
+    (license (list license:expat license:asl2.0))))
+
 (define-public rust-automerge-test-0.4
   (package
     (name "rust-automerge-test")
