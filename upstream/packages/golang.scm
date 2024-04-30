@@ -36,160 +36,66 @@
 (define with-go-1.19
   (package-input-rewriting/spec `(("go" . ,(const go-1.19)))))
 
-(define-public go-1.21
+(define-public go-1.22
   (package
-    (inherit go-1.20)
+    (inherit go-1.21)
     (name "go")
-    (version "1.21.0")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/golang/go")
-                    (commit (string-append "go" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "04cpahl10i1sncymdfm0vzcj3czv6lv0axwa1sisl9cz3rdrp7hj"))))
+    (version "1.22.2")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/golang/go")
+             (commit (string-append "go" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0p6v5dl4mzlrma6v1a26d8zr4csq5mm10d9sdhl3kn9d22vphql1"))))
     (arguments
-     (substitute-keyword-arguments (package-arguments go-1.20)
-       ;; Source patching phases are broken up into discrete steps to allow
-       ;; future versions to discard individual phases without having to
-       ;; discard all source patching.
+     (substitute-keyword-arguments (package-arguments go-1.21)
        ((#:phases phases)
         #~(modify-phases #$phases
-            (delete 'skip-TestGoPathShlibGccgo-tests)
-            (delete 'patch-source)
-            (add-after 'unpack 'patch-os-tests
+            (replace 'unpatch-perl-shebangs
               (lambda _
-                (substitute* "src/os/os_test.go"
-                  (("/usr/bin") (getcwd))
-                  (("/bin/sh") (which "sh")))))
-
-            (add-after 'unpack 'apply-patches
-              (lambda* (#:key inputs #:allow-other-keys)
-                ;; Having the patch in the 'patches' field of <origin> breaks
-                ;; the 'TestServeContent' test due to the fact that
-                ;; timestamps are reset.  Thus, apply it from here.
-                (invoke "patch" "-p1" "--force" "-i"
-                        (assoc-ref inputs "go-fix-script-tests.patch"))))
-
-            (add-after 'unpack 'patch-src/net
-              (lambda* (#:key inputs #:allow-other-keys)
-                (let ((net-base (assoc-ref inputs "net-base")))
-                  (substitute* "src/net/lookup_unix.go"
-                    (("/etc/protocols")
-                     (string-append net-base "/etc/protocols")))
-                  (substitute* "src/net/port_unix.go"
-                    (("/etc/services")
-                     (string-append net-base "/etc/services"))))))
-
-            (add-after 'unpack 'patch-zoneinfo
-              (lambda* (#:key inputs #:allow-other-keys)
-                ;; Add the path to this specific version of tzdata's zoneinfo
-                ;; file to the top of the list to search. We don't want to
-                ;; replace any sources because it will affect how binaries
-                ;; compiled with this Go toolchain behave on non-guix
-                ;; platforms.
-                (substitute* "src/time/zoneinfo_unix.go"
-                  (("var platformZoneSources.+" all)
-                   (format #f "~a~%\"~a/share/zoneinfo\",~%"
-                           all
-                           (assoc-ref inputs "tzdata"))))))
-
-            (add-after 'unpack 'patch-cmd/go/testdata/script
+                ;; Avoid inclusion of perl in closure by rewriting references
+                ;; to perl input in sourcecode generators and test scripts
+                (substitute* (find-files "src" "\\.pl$")
+                  (("^#!.*")
+                   "#!/usr/bin/env perl\n"))))
+            (add-after 'unpack 'remove-flakey-thread-sanitizer-tests
               (lambda _
-                (substitute* "src/cmd/go/testdata/script/cgo_path_space.txt"
-                  (("/bin/sh") (which "sh")))))
-
-            (add-after 'enable-external-linking 'enable-external-linking-1.21
-              (lambda _
-                ;; Invoke GCC to link any archives created with GCC (that is, any
-                ;; packages built using 'cgo'), because Go doesn't know how to
-                ;; handle the runpaths but GCC does.  Use substitute* rather than
-                ;; a patch since these files are liable to change often.
-                ;;
-                ;; XXX: Replace with GO_EXTLINK_ENABLED=1 or similar when
-                ;; <https://github.com/golang/go/issues/31544> and/or
-                ;; <https://github.com/golang/go/issues/43525> are resolved.
-                (substitute* "src/cmd/link/internal/ld/config.go"
-                  (("\\(iscgo && \\(.+\\)") "iscgo"))
-                (substitute* "src/internal/testenv/testenv.go"
-                  (("!CanInternalLink.+") "true {\n"))
-                (substitute* "src/syscall/exec_linux_test.go"
-                  (("testenv.MustHaveExecPath\\(t, \"whoami\"\\)")
-                   "t.Skipf(\"no passwd file present\")"))))
-
-            (replace 'install
-              (lambda* (#:key outputs #:allow-other-keys)
-                ;; Notably, we do not install archives (180M), which Go will
-                ;; happily recompile quickly (and cache) if needed, almost
-                ;; surely faster than they could be substituted.
-                ;;
-                ;; The main motivation for pre-compiled archives is to use
-                ;; libc-linked `net' or `os' packages without a C compiler,
-                ;; but on Guix a C compiler is necessary to properly link the
-                ;; final binaries anyway.  Many build flags also invalidate
-                ;; these pre-compiled archives, so in practice Go often
-                ;; recompiles them anyway.
-                ;;
-                ;; Upstream is also planning to no longer install these
-                ;; archives: <https://github.com/golang/go/issues/47257>
-                ;;
-                ;; When necessary, a custom pre-compiled library package can
-                ;; be created with `#:import-path "std"' and used with
-                ;; `-pkgdir'.
-                ;;
-                ;; When moving files into place, any files that come from
-                ;; GOROOT should remain in GOROOT to continue functioning. If
-                ;; they need to be referenced from some other directory, they
-                ;; need to be symlinked from GOROOT. For more information,
-                ;; please see https://github.com/golang/go/issues/61921
-                (let* ((out (assoc-ref outputs "out"))
-                       (tests (assoc-ref outputs "tests")))
-                  (for-each
-                   (lambda (file)
-                     (copy-recursively file (string-append out "/lib/go/" file)))
-                   '("bin" "go.env" "lib" "VERSION" "pkg/include" "pkg/tool"))
-
-                  (symlink "lib/go/bin" (string-append out "/bin"))
-
-                  (for-each
-                   (match-lambda
-                     ((file dest output)
-                      ;; Copy to output/dest and symlink from output/lib/go/file.
-                      (let ((file* (string-append output "/lib/go/" file))
-                            (dest* (string-append output "/" dest)))
-                        (copy-recursively file dest*)
-                        (mkdir-p (dirname file*))
-                        (symlink (string-append "../../" dest) file*))))
-                   `(("src"          "share/go/src"        ,out)
-                     ("misc"         "share/go/misc"       ,out)
-                     ("doc"          "share/doc/go/doc"    ,out)
-                     ("api"          "share/go/api"        ,tests)
-                     ("test"         "share/go/test"       ,tests))))))))))))
+                ;; These tests have been identified as flakey:
+                ;; https://github.com/golang/go/issues/66427
+                (substitute* "src/cmd/cgo/internal/testsanitizers/tsan_test.go"
+                  ((".*tsan1[34].*") ""))))))))
+    (native-inputs
+     ;; Go 1.22 and later requires Go 1.20 (min. 1.20.6, which we don't have)
+     ;; as the bootstrap toolchain.
+     (alist-replace "go"
+                    (list go-1.21)
+                    (package-native-inputs go-1.21)))))
 
 (define-public go-github-com-aybabtme-rgbterm
   (package
-   (name "go-github-com-aybabtme-rgbterm")
-   (version "0.0.0-20170906152045-cc83f3b3ce59")
-   (source
-    (origin
-     (method git-fetch)
-     (uri (git-reference
-           (url "https://github.com/aybabtme/rgbterm")
-           (commit (go-version->git-ref version))))
-     (file-name (git-file-name name version))
-     (sha256
-      (base32 "0wvmxvjn64968ikvnxrflb1x8rlcwzpfl53fzbxff2axbx9lq50q"))))
-   (build-system go-build-system)
-   (arguments '(#:import-path "github.com/aybabtme/rgbterm"))
-   (home-page "https://github.com/aybabtme/rgbterm")
-   (synopsis "RGB terminal")
-   (description
-    "Package rgbterm colorizes bytes and strings using RGB colors, for a
+    (name "go-github-com-aybabtme-rgbterm")
+    (version "0.0.0-20170906152045-cc83f3b3ce59")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/aybabtme/rgbterm")
+             (commit (go-version->git-ref version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0wvmxvjn64968ikvnxrflb1x8rlcwzpfl53fzbxff2axbx9lq50q"))))
+    (build-system go-build-system)
+    (arguments '(#:import-path "github.com/aybabtme/rgbterm"))
+    (home-page "https://github.com/aybabtme/rgbterm")
+    (synopsis "RGB terminal")
+    (description
+     "Package rgbterm colorizes bytes and strings using RGB colors, for a
 full range of pretty terminal strings.
 ")
-   (license license:expat)))
+    (license license:expat)))
 
 (define-public go-github-com-go-logfmt-logfmt
   (package
