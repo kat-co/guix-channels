@@ -1,4 +1,4 @@
-;;; Copyright © 2020, 2021, 2022, 2023 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2023, 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -36,6 +36,33 @@
   #:use-module (gnu packages pkg-config)
 
   #:use-module (upstream packages networking))
+
+(define-public sbcl-cl-frugal-uuid
+  (let ((commit "de8e19dc152046f46e18269ceaadfbb7a1dd22bb")
+        (revision "0"))
+    (package
+     (name "sbcl-cl-frugal-uuid")
+     (version (git-version "0.0.0" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/ak-coram/cl-frugal-uuid")
+             (commit commit)))
+       (file-name (git-file-name "cl-frugal-uuid" version))
+       (sha256
+        (base32 "12gngz1r45rbvxcxcial81dycys2x9xkm6a1hsg265cl5hh9cciw"))))
+     (build-system asdf-build-system/sbcl)
+     (native-inputs (list sbcl-fiveam))
+     (arguments
+      `(#:asd-systems '("frugal-uuid")))
+     (home-page "https://github.com/ak-coram/cl-frugal-uuid/")
+     (synopsis "UUID library with zero dependencies")
+     (description
+      "A library for generating UUIDs which, by default, has no dependencies.
+Cryptographic-quality random number generators can be used with it to generate
+values with less likelihood of repeated values.")
+     (license license:expat))))
 
 (define-public sbcl-mcclim
   (let ((commit "63b07a30b62e439abc51b13b36de2fe9a938072e")
