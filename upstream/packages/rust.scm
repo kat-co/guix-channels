@@ -26,9 +26,14 @@
   #:use-module (guix utils)
 
   #:use-module (gnu packages check)
+  #:use-module (gnu packages cmake)
+  #:use-module (gnu packages commencement)
   #:use-module (gnu packages crates-crypto)
   #:use-module (gnu packages crates-io)
-  #:use-module (gnu packages rust))
+  #:use-module (gnu packages documentation)
+  #:use-module (gnu packages graphviz)
+  #:use-module (gnu packages rust)
+  #:use-module (gnu packages rust-apps))
 
 (define-public rust-encode-unicode-1
   (package
@@ -296,3 +301,148 @@ for graphs.")
     "This package provides a JSON-like data structure (a CRDT) that can be modified
 concurrently by different users, and merged again automatically")
    (license license:expat)))
+
+(define-public rust-serde-wasm-bindgen-0.4
+  (package
+    (name "rust-serde-wasm-bindgen")
+    (version "0.4.3")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "serde-wasm-bindgen" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32 "0jj3fk985q9a25vdvvc0ni7l6ps76s9424xjgi8rp0kv3rvn5z0w"))))
+    (build-system cargo-build-system)
+    (arguments
+     `(#:cargo-inputs (("rust-js-sys" ,rust-js-sys-0.3)
+                       ("rust-serde" ,rust-serde-1)
+                       ("rust-wasm-bindgen" ,rust-wasm-bindgen-0.2))
+       #:cargo-development-inputs (("rust-maplit" ,rust-maplit-1)
+                                   ("rust-serde" ,rust-serde-1)
+                                   ("rust-serde-bytes" ,rust-serde-bytes-0.11)
+                                   ("rust-serde-json" ,rust-serde-json-1)
+                                   ("rust-wasm-bindgen-test" ,rust-wasm-bindgen-test-0.3))))
+    (home-page "https://github.com/RReverser/serde-wasm-bindgen")
+    (synopsis "Native Serde adapter for wasm-bindgen")
+    (description "Native Serde adapter for wasm-bindgen")
+    (license license:expat)))
+
+;;; WARNING: This package isn't very high quality yet.
+(define-public automerge-c
+  (package
+    (name "automerge-c")
+    (version "0.5.7")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/automerge/automerge")
+             (commit "370089bb30aef3a6061b3dfe37057b45d9d8b855")))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "1mqcia0ap9xqm46cd541qdsk3pzjvgzbdb254gx5rshz14j1xp4q"))))
+    (build-system cargo-build-system)
+    (outputs '("out" "doc"))
+    (arguments
+     `(#:phases
+       ,#~(modify-phases %standard-phases
+            (add-after 'unpack 'remove-build-std-opt
+              (lambda _
+                ;; We aren't building utilizing nightly, and Guix won't allow
+                ;; rustup to download another version. I am not familiar enough
+                ;; with rust to know the implications of not rebuilding the
+                ;; standard library here.
+                (substitute* "rust/automerge-c/CMakeLists.txt"
+                  ((" -Z build-std=std,panic_abort") ""))))
+            (add-after 'unpack 'replace-liblto_plugin-location
+              (lambda* (#:key inputs #:allow-other-keys)
+                (substitute* "rust/automerge-c/CMakeLists.txt"
+                  (("/usr/lib/bfd-plugins/liblto_plugin.so")
+                   #$(file-append gcc-toolchain "libexec/gcc/13.2.0/liblto_plugin.so")))))
+            (add-after 'unpack 'remove-static-lib-commands
+              (lambda _
+                ;; TODO(katco): I can't get substitute* to work across newlines
+                (substitute* "rust/automerge-c/CMakeLists.txt"
+                  ((".*set\\(OBJECTS_DIR objects\\)" all)
+                   (format #f "endif()~%if(NOT BUILD_SHARED_LIBS)~%~a" all)))))
+            (add-before 'build 'configure-build-environment
+              (lambda _
+                (chdir "rust")
+                (mkdir "automerge-c/build")))
+            (replace 'build
+              (lambda _
+                ;; From https://github.com/automerge/automerge/blob/a0ac03edd4c73b78ee3e1bf3b4583bc16804232f/rust/automerge-c/README.md?plain=1#L13-L15
+                (invoke "cmake"
+                        ;; TODO(katco): Their shared library script isn't working
+                        "-D" "BUILD_SHARED_LIBS=ON"
+                        "-S" "automerge-c"
+                        "-B" "automerge-c/build")
+                (invoke "cmake" "--build" "automerge-c/build")))
+            ;; So that symbols aren't stripped
+            (delete 'strip)
+            (add-after 'build 'build-documentation
+              (lambda _
+                ;; From https://github.com/automerge/automerge/blob/a0ac03edd4c73b78ee3e1bf3b4583bc16804232f/rust/automerge-c/README.md?plain=1#L71-L73
+                (invoke "cmake" "-S" "automerge-c" "-B" "automerge-c/build")
+                (invoke "cmake" "--build" "automerge-c/build"
+                        "--target" "automerge_docs")))
+            (delete 'package)
+            (replace 'install
+              (lambda* (#:key outputs #:allow-other-keys)
+                (let* ((build "automerge-c/build/")
+                       (lib-in (string-append build "libautomerge.so"))
+                       (lib-out (string-append (assoc-ref outputs "out") "/lib/"))
+                       (doc-in (string-append build "src/html/"))
+                       (doc-out (string-append (assoc-ref outputs "doc")
+                                               "/share/doc/automerge-c/html/")))
+                  (install-file lib-in lib-out)
+                  ;; TODO(katco): This isn't correct yet
+                  (mkdir-p doc-out)
+                  (copy-recursively doc-in doc-out)))))
+       #:cargo-inputs (("rust-dot" ,rust-dot-0.1)
+                       ("rust-flate2" ,rust-flate2-1)
+                       ("rust-fxhash" ,rust-fxhash-0.2)
+                       ("rust-hex" ,rust-hex-0.4)
+                       ("rust-im" ,rust-im-15)
+                       ("rust-itertools" ,rust-itertools-0.12)
+                       ("rust-js-sys" ,rust-js-sys-0.3)
+                       ("rust-leb128" ,rust-leb128-0.2)
+                       ("rust-rand" ,rust-rand-0.8)
+                       ("rust-serde" ,rust-serde-1)
+                       ("rust-sha2" ,rust-sha2-0.10)
+                       ("rust-smol-str" ,rust-smol-str-0.2)
+                       ("rust-thiserror" ,rust-thiserror-1)
+                       ("rust-tinyvec" ,rust-tinyvec-1)
+                       ("rust-tracing" ,rust-tracing-0.1)
+                       ("rust-unicode-segmentation" ,rust-unicode-segmentation-1)
+                       ("rust-uuid" ,rust-uuid-1)
+                       ("rust-cbindgen" ,rust-cbindgen-0.24)
+                       ("rust-combine" ,rust-combine-4)
+                       ("rust-duct" ,rust-duct-0.13)
+                       ("rust-web-sys" ,rust-web-sys-0.3)
+                       ("rust-serde-wasm-bindgen" ,rust-serde-wasm-bindgen-0.4)
+                       ("rust-serde-bytes" ,rust-serde-bytes-0.11)
+                       ("rust-json" ,rust-json-0.12)
+                       ("rust-console-error-panic-hook" ,rust-console-error-panic-hook-0.1))
+       #:cargo-development-inputs (("rust-criterion" ,rust-criterion-0.4)
+                                   ("rust-maplit" ,rust-maplit-1)
+                                   ("rust-pretty-assertions" ,rust-pretty-assertions-1)
+                                   ("rust-prettytable" ,rust-prettytable-0.10)
+                                   ("rust-proptest" ,rust-proptest-1)
+                                   ("rust-serde-json" ,rust-serde-json-1)
+                                   ("rust-test-log" ,rust-test-log-0.2)
+                                   ("rust-tracing-subscriber" ,rust-tracing-subscriber-0.3)
+                                   ("rust-automerge-test" ,rust-automerge-test-0.4)
+                                   ("rust-serde-test" ,rust-serde-test-1)
+                                   ("rust-wasm-bindgen-test" ,rust-wasm-bindgen-test-0.3))))
+    (native-inputs (list cmocka cmake doxygen gcc-toolchain))
+    (home-page "https://github.com/automerge/automerge")
+    (synopsis
+     "A JSON-like data structure (a CRDT) that can be modified concurrently by
+different users, and merged again automatically")
+    (description
+     "This package provides a JSON-like data structure (a CRDT) that can be modified
+concurrently by different users, and merged again automatically")
+    (license license:expat)))
