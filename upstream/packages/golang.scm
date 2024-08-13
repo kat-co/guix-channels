@@ -358,7 +358,7 @@ launches @code{openconnect} and passes the pre-login cookie obtained to it.")
                   go-golang-org-x-sync
                   go-golang-org-x-mod
                   go-golang-org-x-exp
-                  go-github-com-google-go-cmp-cmp
+                  go-github-com-google-go-cmp
                   go-github-com-google-go-cmdtest
                   go-github-com-client9-misspell))
     (home-page "https://golang.org/x/vuln")
@@ -405,7 +405,7 @@ the @url{https://vuln.go.dev,Go Vulnerability Database}.")
                               (add-before 'unpack 'override-tools
                                           (lambda _
                                             (delete-file-recursively "src/golang.org/x/tools"))))))
-   (propagated-inputs (list go-github-com-google-go-cmp-cmp
+   (propagated-inputs (list go-github-com-google-go-cmp
                             go-github-com-jba-printsrc
                             go-github-com-jba-templatecheck
                             go-github-com-sergi-go-diff
