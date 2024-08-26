@@ -1,4 +1,4 @@
-;;; Copyright © 2023 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2023, 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
                                  (or (getenv "XDG_LOG_HOME")
                                      (format #f "~a/.local/var/log"
                                              (getenv "HOME")))
-                                 "/barrierc.log")))
+                                 "/barriers.log")))
            (stop #~(make-kill-destructor))))))
 
 (define-public home-barriers-service-type
