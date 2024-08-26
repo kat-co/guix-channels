@@ -221,7 +221,10 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
                                      (format #f "~a/.local/var/log"
                                              (getenv "HOME")))
                                  "/barrierc.log")))
-           (stop #~(make-kill-destructor))))))
+           (stop #~(make-kill-destructor))
+           (respawn-delay 5)
+           ;; Don't disable the service if it can't connect
+           (respawn-limit '(2 . 1))))))
 
 (define-public home-barrierc-service-type
   (service-type
