@@ -223,7 +223,7 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
            (stop #~(make-kill-destructor))
            (respawn-delay 5)
            ;; Don't disable the service if it can't connect
-           (respawn-limit '(2 . 1))))))
+           (respawn-limit ''(2 . 1))))))
 
 (define-public home-barrierc-service-type
   (service-type
