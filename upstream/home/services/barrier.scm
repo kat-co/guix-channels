@@ -130,7 +130,6 @@ FATAL, ERROR, WARNING, NOTE, INFO, DEBUG, DEBUG1, DEBUG2.")
                      (list #$(file-append barrier "/bin/barriers")
                            "--no-tray"
                            "--no-daemon"
-                           "--disable-client-cert-checking"
                            "--address" #$(format #f ":~a" port-number)
                            "--config" #$(barriers-configuration-file config)
                            #$@cli-args
