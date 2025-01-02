@@ -1,4 +1,4 @@
-;;; Copyright © 2023, 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2023, 2024, 2025 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -18,9 +18,8 @@
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services utils)
   #:use-module (gnu packages)
-  #:use-module (gnu services configuration)
-
   #:use-module (gnu packages golang)
+  #:use-module (gnu services configuration)
 
   #:use-module (guix gexp)
   #:use-module (guix packages)

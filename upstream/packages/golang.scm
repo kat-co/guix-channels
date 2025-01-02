@@ -1,4 +1,4 @@
-;;; Copyright © 2019, 2021, 2022, 2023, 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2019, 2021, 2022, 2023, 2024, 2025 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -32,47 +32,6 @@
   #:use-module (gnu packages golang-xyz)
   #:use-module (gnu packages security-token)
   #:use-module (gnu packages tls))
-
-(define with-go-1.19
-  (package-input-rewriting/spec `(("go" . ,(const go-1.19)))))
-
-(define-public go-1.22
-  (package
-    (inherit go-1.21)
-    (name "go")
-    (version "1.22.2")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/golang/go")
-             (commit (string-append "go" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "0p6v5dl4mzlrma6v1a26d8zr4csq5mm10d9sdhl3kn9d22vphql1"))))
-    (arguments
-     (substitute-keyword-arguments (package-arguments go-1.21)
-       ((#:phases phases)
-        #~(modify-phases #$phases
-            (replace 'unpatch-perl-shebangs
-              (lambda _
-                ;; Avoid inclusion of perl in closure by rewriting references
-                ;; to perl input in sourcecode generators and test scripts
-                (substitute* (find-files "src" "\\.pl$")
-                  (("^#!.*")
-                   "#!/usr/bin/env perl\n"))))
-            (add-after 'unpack 'remove-flakey-thread-sanitizer-tests
-              (lambda _
-                ;; These tests have been identified as flakey:
-                ;; https://github.com/golang/go/issues/66427
-                (substitute* "src/cmd/cgo/internal/testsanitizers/tsan_test.go"
-                  ((".*tsan1[34].*") ""))))))))
-    (native-inputs
-     ;; Go 1.22 and later requires Go 1.20 (min. 1.20.6, which we don't have)
-     ;; as the bootstrap toolchain.
-     (alist-replace "go"
-                    (list go-1.21)
-                    (package-native-inputs go-1.21)))))
 
 (define-public go-github-com-aybabtme-rgbterm
   (package
@@ -248,8 +207,7 @@ October, 2014.  See our @url{https://shopifyengineering.myshopify.com/blogs/engi
         (base32 "0j9znd0l1mfc9gwah6zca35yhvi4avz02xnrps0zk6phafg3lw1f"))))
     (build-system go-build-system)
     (arguments
-     `(#:go ,go-1.20
-       #:import-path "openconnect-gp-okta"))
+     `(#:import-path "openconnect-gp-okta"))
     (inputs (list libfido2 libressl))
     (synopsis "@code{openconnect} wrapper which performs a webauthn flow")
     (description
