@@ -1,4 +1,4 @@
-;;; Copyright © 2024, 2025 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -267,7 +267,7 @@ for graphs.")
    (arguments
     `(#:tests? #f ;; TODO(katco): Spend time getting assert_doc macro to resolve
       #:cargo-inputs (("rust-dot" ,rust-dot-0.1)
-                      ("rust-flate2" ,rust-flate2)
+                      ("rust-flate2" ,rust-flate2-1)
                       ("rust-fxhash" ,rust-fxhash-0.2)
                       ("rust-hex" ,rust-hex-0.4)
                       ("rust-im" ,rust-im-15)
@@ -402,7 +402,7 @@ concurrently by different users, and merged again automatically")
                   (mkdir-p doc-out)
                   (copy-recursively doc-in doc-out)))))
        #:cargo-inputs (("rust-dot" ,rust-dot-0.1)
-                       ("rust-flate2" ,rust-flate2)
+                       ("rust-flate2" ,rust-flate2-1)
                        ("rust-fxhash" ,rust-fxhash-0.2)
                        ("rust-hex" ,rust-hex-0.4)
                        ("rust-im" ,rust-im-15)
