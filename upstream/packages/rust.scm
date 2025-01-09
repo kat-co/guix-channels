@@ -1,4 +1,4 @@
-;;; Copyright © 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2024, 2025 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
   #:use-module (gnu packages cmake)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages crates-crypto)
+  #:use-module (gnu packages crates-compression)
   #:use-module (gnu packages crates-io)
   #:use-module (gnu packages documentation)
   #:use-module (gnu packages graphviz)
