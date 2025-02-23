@@ -1,4 +1,4 @@
-;;; Copyright © 2020, 2021, 2022, 2023, 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2023, 2024, 2025 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages pkg-config)
 
+  #:use-module (upstream packages c-xyz)
   #:use-module (upstream packages networking))
 
 (define-public sbcl-cl-frugal-uuid
@@ -318,3 +319,34 @@ the 2005 ACM Software System Award.")
                    license:lgpl2.1
                    license:cc0
                    license:public-domain))))
+
+(define-public sbcl-webui
+  (let ((commit "effdc424a6fb9eb9a122b628af1e41ead2874855")
+        (revision "1"))
+    (package
+      (name "sbcl-webui")
+      (version (git-version "0.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/garlic0x1/cl-webui")
+               (commit commit)))
+         (file-name (git-file-name "sbcl-webui" version))
+         (sha256
+          (base32 "0xhq6gypb59iyakqwwpjmlazf7sc5c7kml1kzb8k4xyz4z3f8jrr"))))
+      (build-system asdf-build-system/sbcl)
+      (arguments
+       `(#:asd-systems '("cl-webui")
+         #:phases
+         (modify-phases %standard-phases
+           (add-after 'unpack 'fix-paths
+             (lambda* (#:key inputs #:allow-other-keys)
+               (substitute* "webui.lisp"
+                 (("webui-2.so")
+                  (search-input-file inputs "/lib/webui-2.so"))))))))
+      (inputs (list sbcl-cffi webui))
+      (home-page "https://github.com/garlic0x1/cl-webui")
+      (synopsis "Common Lisp bindings for the webui C library")
+      (description "TODO")
+      (license license:expat))))
