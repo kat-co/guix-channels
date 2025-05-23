@@ -1,4 +1,4 @@
-;;; Copyright © 2021 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2021, 2025 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
   #:use-module (guix git-download)
   #:use-module (guix build-system python)
   #:use-module (gnu packages python-xyz)
+  #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages gtk)
