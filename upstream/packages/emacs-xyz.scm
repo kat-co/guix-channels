@@ -1,4 +1,4 @@
-;;; Copyright © 2020, 2021, 2022, 2024 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2024, 2025 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
   #:use-module (guix packages)
 
   #:use-module (gnu packages emacs-xyz)
+  #:use-module (gnu packages emacs-build)
   #:use-module (gnu packages graphviz)
 
   #:use-module (upstream packages python-xyz))
