@@ -18,7 +18,7 @@
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services utils)
   #:use-module (gnu packages)
-  #:use-module (gnu packages golang-xyz)
+  #:use-module (gnu packages golang-apps)
   #:use-module (gnu services configuration)
 
   #:use-module (guix gexp)
