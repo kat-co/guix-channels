@@ -24,9 +24,7 @@
 
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages emacs-build)
-  #:use-module (gnu packages graphviz)
-
-  #:use-module (upstream packages python-xyz))
+  #:use-module (gnu packages graphviz))
 
 (define-public emacs-git
   (package
@@ -316,88 +314,41 @@ displays results pretty-printed in XML or JSON with @code{restclient-mode}")
        "This package integrates @code{restclient-mode} with Org.")
       (license license:gpl3+))))
 
-(define-public emacs-moldable-emacs
-  (let ((commit "1c5726761551f9d70269434e3acc6543c0d15459")
-        (revision "2"))
-    (package
-      (name "emacs-moldable-emacs")
-      (version (git-version "0.0.0" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/ag91/moldable-emacs")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "1ki0fk7rc002zazqh779vr6s0aqpj4ms160h7na290rkwx1wmfyv"))))
-      (build-system emacs-build-system)
-      (arguments
-       `(#:include (append '("^molds/" "^tutorial") %default-include)
-         #:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'patch-bin-locations
-             (lambda* (#:key inputs outputs #:allow-other-keys)
-               (let ((file "molds/contrib.el")
-                     (graph-bin (which "graph"))
-                     (dot-bin (which "dot")))
-                 (chmod file #o644)
-                 (substitute* file
-                   (("\\(executable-find \"graph\"\\)")
-                    (string-append "(executable-find \"" graph-bin "\")"))
-                   (("\\(executable-find \"dot\"\\)")
-                    (string-append "(executable-find \"" dot-bin "\")"))
-                   (("\"graph ")
-                    (string-append "\"" graph-bin " ")))))))))
-      (inputs
-       `(("graphviz" ,graphviz)
-         ("graph-cli" ,python-graph-cli)))
-      (propagated-inputs
-       `(("emacs-dash" ,emacs-dash)
-         ("emacs-s" ,emacs-s)
-         ("emacs-async" ,emacs-async)
-         ("emacs-json-mode" ,emacs-json-mode)
-         ("emacs-csv-mode" ,emacs-csv-mode)))
-      (home-page "https://github.com/ag91/moldable-emacs")
-      (synopsis "Adapting Emacs for moldable development ")
-      (description
-       "This is an extension of Emacs aiming to enable Moldable
-Development. Or better still, aiming to make you a better story teller
-when you deal with code.")
-      (license license:gpl3+))))
-
 (define-public emacs-kubernetes
   (package
     (name "emacs-kubernetes")
-    (version "20221229.1519")
+    (version "0.18.0")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/kubernetes-el/kubernetes-el.git")
-             (commit "423c216fdef06d32dde835bb91daff353f41b72e")))
+              (url "https://github.com/kubernetes-el/kubernetes-el.git")
+              (commit "5cb580d0e1d18a97ec4d0ba33b374a0822a96d4f")))
        (sha256
         (base32 "0f2id1kba5l3l8fn0bil5scvvjklcklwsl7lgf5sdayw0airm94q"))))
     (build-system emacs-build-system)
     (propagated-inputs (list emacs-dash
+                             emacs-evil
                              emacs-magit
                              emacs-magit-popup
                              emacs-with-editor
                              emacs-request
                              emacs-s
                              emacs-transient))
+    (native-inputs (list emacs-buttercup emacs-ert-runner emacs-f))
     (arguments
-     '(#:include '("^[^/]+.el$" "^[^/]+.el.in$"
-                   "^dir$"
-                   "^[^/]+.info$"
-                   "^[^/]+.texi$"
-                   "^[^/]+.texinfo$"
-                   "^doc/dir$"
-                   "^doc/[^/]+.info$"
-                   "^doc/[^/]+.texi$"
-                   "^doc/[^/]+.texinfo$")
-       #:exclude '("^.dir-locals.el$" "^test.el$" "^tests.el$"
-                   "^[^/]+-test.el$" "^[^/]+-tests.el$" "^kubernetes-evil.el$")))
+     '(#:phases
+       (modify-phases %standard-phases
+         (add-before 'check 'fix-makefile
+           (lambda _
+             (substitute* "Makefile"
+               ;; Just run the commands
+               (("\\$\\(CASK\\) exec ") "")
+               ;; Don't use Cask
+               ((".*which cask.*") ""))))
+         ;; TODO: Need to make more modifications to the Makefile before this
+         ;; will work.
+         (delete 'check))))
     (home-page "https://github.com/kubernetes-el/kubernetes-el")
     (synopsis "Magit-like porcelain for Kubernetes")
     (description
