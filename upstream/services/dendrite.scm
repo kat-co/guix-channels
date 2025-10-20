@@ -137,11 +137,6 @@ at. This is useful when using anonymous blocks in lists."
    (name "dendrite")
    (system? #t)))
 
-(define %dendrite-log-rotations
-  (list (log-rotation
-         (files (list %dendrite-log-path))
-         (frequency 'weekly))))
-
 (define-public %dendrite
   (package
     (name "dendrite")
@@ -1036,6 +1031,5 @@ optional boolean which should be set to true if the user should be an admin.")
           (service-extension activation-service-type dendrite-activation)
           (service-extension account-service-type (const (list
                                                           %dendrite-group
-                                                          %dendrite-user)))
-          (service-extension rottlog-service-type (const %dendrite-log-rotations))))
+                                                          %dendrite-user)))))
    (default-value (dendrite-configuration))))
