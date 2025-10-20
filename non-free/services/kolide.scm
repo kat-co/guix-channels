@@ -1,4 +1,4 @@
-;;; Copyright © 2021 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2021, 2025 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -39,11 +39,6 @@
 (define %kolide-etc-path "kolide-k2/")
 (define %kolide-metadata-path "installer-info.json")
 (define %kolide-enroll-secret-path "secret")
-
-(define %kolide-log-rotations
-  (list (log-rotation
-         (files (list %kolide-log-path))
-         (frequency 'weekly))))
 
 (define list-of-paths? (list-of string?))
 (define (serialize-list-of-paths name paths)
@@ -263,7 +258,5 @@ will be created at /etc/kolide-k2/secret.")
           (service-extension account-service-type (const %kolide-accounts))
           (service-extension activation-service-type
                              (const %kolide-activation))
-          (service-extension etc-service-type kolide-etc)
-          (service-extension rottlog-service-type
-                             (const %kolide-log-rotations))))
+          (service-extension etc-service-type kolide-etc)))
    (default-value (kolide-configuration))))
