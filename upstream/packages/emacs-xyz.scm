@@ -1,4 +1,4 @@
-;;; Copyright © 2020, 2021, 2022, 2024, 2025 Katherine Cox-Buday <cox.katherine.e@gmail.com>
+;;; Copyright © 2020, 2021, 2022, 2024, 2025, 2026 Katherine Cox-Buday <cox.katherine.e@gmail.com>
 ;;;
 ;;; This is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -261,58 +261,6 @@ Entrypoints:
       "This package provides an extension to org-mode for syncing
 issues with JIRA issue servers.")
      (license license:gpl3+))))
-
-(define-public emacs-restclient
-  (let ((commit "94d2e8421fa14d0e3307d70e1d1e2db9d43b2f95")
-        (version "0")
-        (revision "5"))
-    (package
-     (name "emacs-restclient")
-     (version (git-version version revision commit))
-     (source
-      (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/pashky/restclient.el")
-             (commit commit)))
-       (sha256
-        (base32
-         "0c9z6316pdi30w63a4zqn3b84ciqgxfi7mal6rd3micxg6qpv27c"))
-       (file-name (git-file-name name version))))
-     (build-system emacs-build-system)
-     (propagated-inputs
-      `(("emacs-helm" ,emacs-helm)
-        ("emacs-jq-mode" ,emacs-jq-mode)))
-     (home-page "https://github.com/pashky/restclient.el")
-     (synopsis "Explore and test HTTP REST webservices")
-     (description
-      "This tool allows for testing and exploration of HTTP REST Web services
-from within Emacs.  Restclient runs queries from a plan-text query sheet,
-displays results pretty-printed in XML or JSON with @code{restclient-mode}")
-     (license license:public-domain))))
-
-(define-public emacs-ob-restclient
-  (let ((commit "bfbc4d8e8a348c140f9328542daf5d979f0993e2"))
-    (package
-      (name "emacs-ob-restclient")
-      (version (git-version "0.02" "3" commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/alf/ob-restclient.el")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "0nq5w2gankvb7ix8rv33814j7qvhiawd9r15b9i6syn1i5k5pxhj"))))
-      (propagated-inputs
-       `(("emacs-restclient" ,emacs-restclient)))
-      (build-system emacs-build-system)
-      (home-page "https://github.com/alf/ob-restclient.el")
-      (synopsis "Org-babel functionality for @code{restclient-mode}")
-      (description
-       "This package integrates @code{restclient-mode} with Org.")
-      (license license:gpl3+))))
 
 (define-public emacs-kubernetes
   (package
